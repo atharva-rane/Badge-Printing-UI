@@ -29,7 +29,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        "https://TBATCHAPI.somee.com/batchprinting/api/LoginUser/login",
+        "http://TBATCHAPI.somee.com/batchprinting/api/LoginUser/login",
         {
           method: "POST",
           headers: {
