@@ -1,0 +1,192 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.login-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* LEFT SIDE */
+
+.left-panel {
+  flex: 1;
+  background: #fff;
+  padding: 40px 70px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo h2 {
+  font-weight: 700;
+}
+
+.logo-icon {
+  display: grid;
+  grid-template-columns: repeat(2, 14px);
+  gap: 4px;
+}
+
+.logo-icon span {
+  width: 14px;
+  height: 14px;
+  background: #6f42c1;
+}
+
+.login-box {
+  max-width: 420px;
+  margin: 50px auto;
+}
+
+.login-box h1 {
+  font-size: 52px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.login-box p {
+  color: #777;
+  margin-bottom: 30px;
+}
+
+.input-group {
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+}
+
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.options a {
+  color: #6f42c1;
+  text-decoration: none;
+}
+
+.signin-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  background: #6f42c1;
+  color: white;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.google-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.google-btn img {
+  width: 20px;
+}
+
+.signup-text {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.signup-text a {
+  color: #6f42c1;
+  text-decoration: none;
+}
+
+/* RIGHT SIDE */
+
+.right-panel {
+  flex: 1;
+  background: linear-gradient(
+    135deg,
+    #a78bfa,
+    #8b5cf6,
+    #c3b5fd
+  );
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.right-panel {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.right-image {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  display: block;
+}
+
+/* Dark transparent layer */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Show overlay on hover */
+.right-panel:hover .overlay {
+  opacity: 1;
+}
+
+.overlay-content {
+  color: white;
+  text-align: center;
+  max-width: 600px;
+  margin-top: 150px; /* Increase to move it down */
+}
+
+.right-panel:hover .overlay-content {
+  transform: translateY(0);
+}
+
+.overlay-content h1 {
+  font-size: 42px;
+  margin-bottom: 20px;
+}
+
+.overlay-content p {
+  font-size: 18px;
+  line-height: 1.6;
+}

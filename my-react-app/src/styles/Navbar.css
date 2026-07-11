@@ -1,0 +1,350 @@
+/* ===========================
+   NAVBAR BASE
+=========================== */
+
+.navbar{
+
+    position:fixed;
+
+    top:0;
+    left:0;
+    right:0;
+
+    height:64px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 20px;
+
+    background:#fff;
+
+    border-bottom:1px solid #e5e7eb;
+
+    z-index:1200;
+
+    box-sizing:border-box;
+}
+
+/* ===========================
+   LEFT SECTION
+=========================== */
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* toggle button */
+.navbar-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: #374151;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  padding: 8px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.navbar-toggle:hover {
+  background: #f3f4f6;
+}
+
+/* title */
+.navbar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+
+
+/* ===========================
+   BRAND SECTION (LOGO + TEXT)
+=========================== */
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 4px;
+  white-space: nowrap;
+}
+
+.navbar-logo {
+  padding-left: 1rem;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.navbar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* ===========================
+   SEARCH BAR (CENTER)
+=========================== */
+
+.navbar-search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 20px; /* adds breathing space */
+}
+
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: #f3f4f6;
+  padding: 10px 14px;
+  border-radius: 10px;
+
+   width:min(700px,100%);
+}
+
+
+.search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  color: #111827;
+  min-width: 0;
+}
+
+.search-icon {
+  color: #6b7280;
+}
+
+/* ===========================
+   RIGHT SECTION
+=========================== */
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* notification button */
+.nav-icon-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  padding: 8px;
+  border-radius: 8px;
+  transition: 0.2s;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #374151;
+}
+
+.nav-icon-btn:hover {
+  background: #f3f4f6;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+}
+
+/* ===========================
+   PROFILE
+=========================== */
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+  position:relative;
+  transition: 0.2s;
+  
+}
+
+.profile:hover {
+  background: #f3f4f6;
+}
+
+.profile img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* ===========================
+   DROPDOWN
+=========================== */
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+
+  width: 180px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  z-index: 100;
+}
+
+.profile-dropdown button {
+  width: 100%;
+  padding: 10px 12px;
+
+  border: none;
+  background: transparent;
+  text-align: left;
+
+  font-size: 14px;
+  color: #374151;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.profile-dropdown button:hover {
+  background: #f3f4f6;
+}
+
+.profile-dropdown .logout {
+  color: #ef4444;
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media (max-width: 768px) {
+  .navbar-search {
+    display: none;
+  }
+
+  .navbar-title {
+    font-size: 16px;
+  }
+
+  .navbar-brand-text {
+    display: none;
+  }
+}
+
+.navbar-logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.navbar-logout-modal {
+  width: 380px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 12px 35px rgba(0,0,0,.25);
+  animation: navbarLogoutPopup .25s ease;
+}
+
+@keyframes navbarLogoutPopup {
+  from {
+    transform: scale(.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.navbar-logout-modal h4 {
+  margin-bottom: 12px;
+}
+
+.navbar-logout-modal p {
+  margin-bottom: 24px;
+  color: #6b7280;
+}
+
+.navbar-logout-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.navbar-logout-cancel-btn,
+.navbar-logout-confirm-btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.navbar-logout-cancel-btn {
+  background: #e5e7eb;
+}
+
+.navbar-logout-confirm-btn {
+  background: #dc2626;
+  color: #fff;
+}

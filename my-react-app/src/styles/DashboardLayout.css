@@ -1,0 +1,26 @@
+.dashboard-layout{
+    background:#f6f8fc;
+    min-height:100vh;
+}
+
+/* navbar height */
+.page-content{
+
+    margin-top:64px;
+    margin-left: 75px;
+    padding:24px;
+
+    min-height:calc(100vh - 64px);
+transition: none;
+
+    overflow-x:auto;
+}
+
+/* YouTube behaviour */
+
+
+
+/* Mini sidebar leaves room */
+.page-content.sidebar-collapsed{
+    margin-left:75px;
+}

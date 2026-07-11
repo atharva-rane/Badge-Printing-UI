@@ -1,0 +1,572 @@
+/* ==========================================
+   PAGE
+========================================== */
+
+.sevacoordinatormaster-page {
+  padding: 20px;
+  background: #f5f7fb;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.sevacoordinatormaster-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 18px;
+}
+
+/* ==========================================
+   MODE SWITCH
+========================================== */
+
+.sevacoordinatormaster-mode-switch {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 18px;
+}
+
+.sevacoordinatormaster-mode-switch label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.sevacoordinatormaster-mode-switch input[type="radio"] {
+  cursor: pointer;
+}
+
+/* ==========================================
+   CARD
+========================================== */
+
+.sevacoordinatormaster-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================
+   FORM GRID
+========================================== */
+
+.sevacoordinatormaster-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(350px, 1fr));
+  gap: 18px 30px;
+}
+
+.sevacoordinatormaster-form-group {
+  display: flex;
+  align-items: center;
+}
+
+.sevacoordinatormaster-form-group label {
+  width: 133px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+.sevacoordinatormaster-form-group input,
+.sevacoordinatormaster-form-group select {
+  flex: 1;
+  max-width: 450px;
+  padding: 10px 12px;
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+  transition: all 0.25s ease;
+}
+
+.sevacoordinatormaster-form-group input:focus,
+.sevacoordinatormaster-form-group select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.08);
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+.sevacoordinatormaster-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.sevacoordinatormaster-btn-row button {
+  min-width: 95px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.25s ease;
+}
+
+.sevacoordinatormaster-btn-row button:hover {
+  opacity: 0.9;
+}
+
+.sevacoordinatormaster-btn-row button:active {
+  transform: scale(0.98);
+}
+
+/* Save */
+.sevacoordinatormaster-btn-row button:nth-child(1) {
+  background: #28a745;
+}
+
+/* Update */
+.sevacoordinatormaster-btn-row button:nth-child(2) {
+  background: #007bff;
+}
+
+/* Delete */
+.sevacoordinatormaster-btn-row button:nth-child(3) {
+  background: #dc3545;
+}
+
+/* Export */
+.sevacoordinatormaster-btn-row button:nth-child(4) {
+  background: #6c757d;
+}
+
+/* Clear */
+.sevacoordinatormaster-btn-row button:nth-child(5) {
+  background: #ffc107;
+  color: #000;
+}
+/* ==========================================
+   SEARCH BOX
+========================================== */
+
+.sevacoordinatormaster-search-container {
+  background: #fff;
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* Search Label */
+
+.sevacoordinatormaster-search-label {
+  width: auto;
+  min-width: 120px;   /* keeps alignment */
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+
+/* Search Input */
+
+.sevacoordinatormaster-search-input {
+  width: 100%;
+  max-width: 450px;
+  padding: 10px 12px;
+
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+
+  font-size: 14px;
+  outline: none;
+
+  transition: 0.25s;
+}
+
+
+/* Focus */
+
+.sevacoordinatormaster-search-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 5px rgba(13,110,253,0.25);
+}
+
+
+/* Placeholder */
+
+.sevacoordinatormaster-search-input::placeholder {
+  color: #999;
+}
+
+/* ==========================================
+   FILE UPLOAD
+========================================== */
+
+.sevacoordinatormaster-file-upload-row{
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+}
+
+.sevacoordinatormaster-file-upload-row label{
+    width: 133px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #444;
+}
+
+.sevacoordinatormaster-file-upload-container{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sevacoordinatormaster-custom-file-box{
+    width: 600px;      /* Change as needed */
+    max-width: 100%;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid #d7d7d7;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.sevacoordinatormaster-hidden-file-input{
+    display:none;
+}
+
+.sevacoordinatormaster-custom-file-box:hover{
+    border-color:#0d6efd;
+}
+
+.sevacoordinatormaster-choose-file-btn{
+
+    height:100%;
+
+    padding:0 18px;
+
+    border:none;
+
+    border-right:1px solid #d7d7d7;
+
+    background:#f8f9fa;
+
+    font-size:14px;
+
+    cursor:pointer;
+}
+
+.sevacoordinatormaster-file-name{
+
+    flex:1;
+
+    padding:0 12px;
+
+    overflow:hidden;
+
+    white-space:nowrap;
+
+    text-overflow:ellipsis;
+
+    color:#555;
+
+    font-size:14px;
+}
+
+.sevacoordinatormaster-file-delete-btn{
+
+    width:42px;
+
+    height:42px;
+
+    border:none;
+
+    border-radius:6px;
+
+    background:#dc3545;
+
+    color:#fff;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    cursor:pointer;
+
+    flex-shrink:0;
+
+    transition:.25s;
+}
+
+.sevacoordinatormaster-file-delete-btn:hover{
+    background:#bb2d3b;
+}
+
+
+/* ==========================================
+   SEARCH RESPONSIVE
+========================================== */
+
+@media(max-width:768px){
+
+  .sevacoordinatormaster-search-container{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+
+  .sevacoordinatormaster-search-label{
+    width:100%;
+  }
+
+
+  .sevacoordinatormaster-search-input{
+    width:100%;
+    max-width:100%;
+  }
+
+}
+/* ==========================================
+   TABLE
+========================================== */
+
+.sevacoordinatormaster-table-container {
+  background: #fff;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.sevacoordinatormaster-table-container table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+}
+
+.sevacoordinatormaster-table-container thead {
+  background: #007bff;
+}
+
+.sevacoordinatormaster-table-container thead th {
+  color: #fff;
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sevacoordinatormaster-table-container tbody td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #ececec;
+  white-space: nowrap;
+}
+
+.sevacoordinatormaster-table-container tbody tr {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sevacoordinatormaster-table-container tbody tr:hover {
+  background: #eef5ff;
+}
+
+.sevacoordinatormaster-active-row {
+  background: #dcecff !important;
+}
+
+.sevacoordinatormaster-table-container tbody tr td[colspan] {
+  text-align: center;
+  font-weight: 500;
+  color: #666;
+  padding: 20px;
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+.sevacoordinatormaster-table-container::-webkit-scrollbar {
+  height: 10px;
+}
+
+.sevacoordinatormaster-table-container::-webkit-scrollbar-track {
+  background: #f2f2f2;
+}
+
+.sevacoordinatormaster-table-container::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 20px;
+}
+
+.sevacoordinatormaster-table-container::-webkit-scrollbar-thumb:hover {
+  background: #9b9b9b;
+}
+
+/* ==========================================
+   INPUT PLACEHOLDERS
+========================================== */
+
+input::placeholder {
+  color: #999;
+}
+/* ==========================================
+   RESPONSIVE - LARGE DEVICES
+========================================== */
+
+@media (max-width: 1200px) {
+
+  .sevacoordinatormaster-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sevacoordinatormaster-form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sevacoordinatormaster-form-group label {
+    width: 100%;
+    margin-bottom: 6px;
+  }
+
+  .sevacoordinatormaster-form-group input,
+  .sevacoordinatormaster-form-group select {
+    width: 100%;
+  }
+
+  .sevacoordinatormaster-search-container {
+    width: 100%;
+  }
+
+  .sevacoordinatormaster-search-box {
+    width: 100%;
+  }
+
+  .sevacoordinatormaster-search-box input {
+    width: 100%;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE - TABLET
+========================================== */
+
+@media (max-width: 768px) {
+
+  .sevacoordinatormaster-page {
+    padding: 15px;
+  }
+
+  .sevacoordinatormaster-title {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+
+  .sevacoordinatormaster-mode-switch {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sevacoordinatormaster-card {
+    padding: 16px;
+  }
+
+  .sevacoordinatormaster-btn-row {
+    justify-content: center;
+  }
+
+  .sevacoordinatormaster-btn-row button {
+    width: 100%;
+  }
+
+  .sevacoordinatormaster-search-container {
+    width: 100%;
+  }
+
+  .sevacoordinatormaster-search-box {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .sevacoordinatormaster-search-box input {
+    width: 100%;
+  }
+
+  .sevacoordinatormaster-table-container table {
+    min-width: 900px;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE - MOBILE
+========================================== */
+
+@media (max-width: 480px) {
+
+  .sevacoordinatormaster-page {
+    padding: 12px;
+  }
+
+  .sevacoordinatormaster-title {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .sevacoordinatormaster-card {
+    padding: 14px;
+  }
+
+  .sevacoordinatormaster-form-group {
+    margin-bottom: 12px;
+  }
+
+  .sevacoordinatormaster-form-group label {
+    font-size: 13px;
+  }
+
+  .sevacoordinatormaster-form-group input,
+  .sevacoordinatormaster-form-group select {
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+
+  .sevacoordinatormaster-btn-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sevacoordinatormaster-btn-row button {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .sevacoordinatormaster-search-label {
+    font-size: 13px;
+  }
+
+  .sevacoordinatormaster-search-box input {
+    font-size: 13px;
+  }
+
+  .sevacoordinatormaster-table-container table {
+    min-width: 850px;
+  }
+}

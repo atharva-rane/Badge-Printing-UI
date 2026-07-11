@@ -1,0 +1,539 @@
+/* ==========================================================
+   UTSAV MASTER
+   (Updated to match SevaCoordinatorMaster)
+========================================================== */
+
+/* ==========================================
+   PAGE
+========================================== */
+
+.utsavMaster-master {
+  padding: 20px;
+  background: #f5f7fb;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.utsavMaster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.utsavMaster-title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+}
+
+.utsavMaster-title p {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ==========================================
+   CARD
+========================================== */
+
+.utsavMaster-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================
+   FORM
+========================================== */
+
+.utsavMaster-form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.utsavMaster-label {
+  width: 190px;
+  min-width: 190px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+.utsavMaster-required {
+  color: #dc3545;
+}
+
+.utsavMaster-input {
+  flex: 1;
+  max-width: 450px;
+  padding: 10px 12px;
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  font-size: 14px;
+  transition: all .25s ease;
+}
+
+.utsavMaster-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 2px rgba(13,110,253,.08);
+}
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+.utsavMaster-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.utsavMaster-button-group button {
+  min-width: 95px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #fff;
+  transition: all .25s ease;
+}
+
+.utsavMaster-button-group button:hover {
+  opacity: .9;
+}
+
+.utsavMaster-button-group button:active {
+  transform: scale(.98);
+}
+
+.utsavMaster-save-btn {
+  background: #28a745;
+}
+
+.utsavMaster-update-btn {
+  background: #007bff;
+}
+
+.utsavMaster-delete-btn {
+  background: #dc3545;
+}
+
+.utsavMaster-clear-btn {
+  background: #ffc107;
+  color: #000;
+}
+
+.utsavMaster-button-group button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   SEARCH
+========================================== */
+
+.utsavMaster-search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.utsavMaster-search-label {
+  min-width: 120px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.utsavMaster-search-input {
+  width: 100%;
+  max-width: 450px;
+}
+
+.utsavMaster-search-label {
+  width: auto;
+  min-width: 120px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.utsavMaster-search-input {
+  width: 100%;
+  max-width: 450px;
+  padding: 10px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  outline: none;
+  font-size: 14px;
+  transition: .25s;
+}
+
+.utsavMaster-search-input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 5px rgba(13,110,253,.25);
+}
+
+.utsavMaster-search-input::placeholder {
+  color: #999;
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+.utsavMaster-table-responsive {
+  background: #fff;
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.utsavMaster-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.utsavMaster-table thead {
+  background: #007bff;
+}
+
+.utsavMaster-table thead th {
+  color: #fff;
+  padding: 12px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.utsavMaster-table tbody td {
+  padding: 12px;
+  font-size: 14px;
+  border-bottom: 1px solid #ececec;
+  white-space: nowrap;
+}
+
+.utsavMaster-table tbody tr {
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.utsavMaster-table tbody tr:hover {
+  background: #eef5ff;
+}
+/* ==========================================
+   SELECTED ROW
+========================================== */
+
+.utsavMaster-selected-row {
+  background: #dcecff !important;
+}
+
+.utsavMaster-table tbody tr td[colspan] {
+  text-align: center;
+  padding: 20px;
+  font-weight: 500;
+  color: #666;
+}
+
+/* ==========================================
+   NO DATA
+========================================== */
+
+.utsavMaster-no-data {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* ==========================================
+   TABLE SCROLLBAR
+========================================== */
+
+.utsavMaster-table-responsive::-webkit-scrollbar {
+  height: 10px;
+}
+
+.utsavMaster-table-responsive::-webkit-scrollbar-track {
+  background: #f2f2f2;
+}
+
+.utsavMaster-table-responsive::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 20px;
+}
+
+.utsavMaster-table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #9b9b9b;
+}
+
+/* ==========================================
+   DELETE POPUP
+========================================== */
+
+.utsavMaster-delete-overlay,
+.utsavMaster-success-overlay,
+.utsavMaster-update-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.utsavMaster-delete-modal,
+.utsavMaster-success-modal,
+.utsavMaster-update-modal {
+  width: 380px;
+  max-width: 90%;
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px;
+  box-shadow: 0 15px 35px rgba(0,0,0,.20);
+  animation: utsavMasterPopup .25s ease;
+}
+
+.utsavMaster-delete-modal h4 {
+  margin: 0 0 12px;
+  color: #dc3545;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.utsavMaster-success-modal h4 {
+  margin: 0 0 12px;
+  color: #28a745;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.utsavMaster-update-modal h4 {
+  margin: 0 0 12px;
+  color: #007bff;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.utsavMaster-delete-modal p,
+.utsavMaster-success-modal p,
+.utsavMaster-update-modal p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.utsavMaster-delete-buttons,
+.utsavMaster-success-buttons,
+.utsavMaster-update-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* ==========================================
+   POPUP BUTTONS
+========================================== */
+
+.utsavMaster-delete-cancel-btn,
+.utsavMaster-update-cancel-btn {
+  min-width: 100px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #6c757d;
+  color: #fff;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.utsavMaster-delete-cancel-btn:hover,
+.utsavMaster-update-cancel-btn:hover {
+  background: #5a6268;
+}
+
+.utsavMaster-delete-confirm-btn {
+  min-width: 100px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #dc3545;
+  color: #fff;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.utsavMaster-delete-confirm-btn:hover {
+  background: #c82333;
+}
+
+.utsavMaster-update-confirm-btn {
+  min-width: 100px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #007bff;
+  color: #fff;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.utsavMaster-update-confirm-btn:hover {
+  background: #0069d9;
+}
+
+.utsavMaster-success-btn {
+  min-width: 100px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #28a745;
+  color: #fff;
+  cursor: pointer;
+  transition: .25s;
+}
+
+.utsavMaster-success-btn:hover {
+  background: #218838;
+}
+
+/* ==========================================
+   POPUP ANIMATION
+========================================== */
+
+@keyframes utsavMasterPopup {
+
+  from {
+    opacity: 0;
+    transform: scale(.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+}
+
+/* ==========================================
+   RESPONSIVE (1200px)
+========================================== */
+
+@media (max-width:1200px){
+
+  .utsavMaster-form-group{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .utsavMaster-label{
+    width:100%;
+    margin-bottom:6px;
+  }
+
+  .utsavMaster-input{
+    width:100%;
+    max-width:100%;
+  }
+
+}
+
+/* ==========================================
+   RESPONSIVE (768px)
+========================================== */
+
+@media(max-width:768px){
+
+  .utsavMaster-master{
+    padding:15px;
+  }
+
+  .utsavMaster-header{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .utsavMaster-title h2{
+    font-size:22px;
+  }
+
+  .utsavMaster-search-container{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .utsavMaster-search-label{
+    width:100%;
+  }
+
+  .utsavMaster-search-input{
+    width:100%;
+    max-width:100%;
+  }
+
+  .utsavMaster-button-group{
+    flex-direction:column;
+  }
+
+  .utsavMaster-button-group button{
+    width:100%;
+  }
+
+  .utsavMaster-table{
+    min-width:850px;
+  }
+
+}
+
+/* ==========================================
+   RESPONSIVE (480px)
+========================================== */
+
+@media(max-width:480px){
+
+  .utsavMaster-master{
+    padding:12px;
+  }
+
+  .utsavMaster-title h2{
+    font-size:20px;
+    text-align:center;
+  }
+
+  .utsavMaster-card{
+    padding:15px;
+  }
+
+  .utsavMaster-label{
+    font-size:13px;
+  }
+
+  .utsavMaster-input,
+  .utsavMaster-search-input{
+    font-size:13px;
+  }
+
+  .utsavMaster-table{
+    min-width:800px;
+  }
+
+}

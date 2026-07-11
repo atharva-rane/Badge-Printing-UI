@@ -1,0 +1,131 @@
+/* ==========================
+   PAGE WRAPPER
+========================== */
+.attendance-wrapper {
+  width: 100%;
+  min-height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 30px;
+}
+
+/* ==========================
+   CARD
+========================== */
+.attendance-card {
+  width: 450px;
+  max-width: 100%;
+
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.attendance-card h2 {
+  color: #0b2e6b;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+/* ==========================
+   BUTTON GROUP
+========================== */
+.btn-group {
+  width: 100%;
+}
+
+.btn-group button,
+.upload-btn {
+  width: 100%;
+
+  padding: 12px 16px;
+
+  border: none;
+  border-radius: 10px;
+
+  font-size: 15px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: 0.25s;
+}
+
+.btn-group button {
+  background: #2563eb;
+  color: white;
+}
+
+.upload-btn {
+  display: block;
+  background: #10b981;
+  color: white;
+  text-align: center;
+}
+
+.btn-group button:hover {
+  background: #1d4ed8;
+}
+
+.upload-btn:hover {
+  background: #059669;
+}
+
+/* ==========================
+   QR SCANNER
+========================== */
+.scanner-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.scanner-box {
+  width: 100%;
+  max-width: 320px;
+
+  border-radius: 12px;
+  overflow: hidden;
+
+  background: white;
+}
+
+#reader {
+  width: 100% !important;
+}
+
+/* ==========================
+   RESULT CARD
+========================== */
+.result-card {
+  width: 100%;
+
+  padding: 18px;
+
+  border-radius: 12px;
+
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+
+  text-align: left;
+}
+
+.result-card h3 {
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+.result-card p {
+  margin: 8px 0;
+  color: #374151;
+}

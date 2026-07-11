@@ -1,0 +1,524 @@
+/* ==========================================
+   PAGE
+========================================== */
+
+.shiftMaster-master {
+  padding: 20px;
+  background: #f5f7fb;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.shiftMaster-header {
+  margin-bottom: 18px;
+}
+
+.shiftMaster-title h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 18px 0;
+}
+
+.shiftMaster-title p {
+  display: none;
+}
+
+
+/* ==========================================
+   CARD
+========================================== */
+
+.shiftMaster-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+
+/* ==========================================
+   FORM GROUP
+========================================== */
+
+.shiftMaster-form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+
+.shiftMaster-label {
+  width: 133px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+}
+
+
+.shiftMaster-required {
+  color: red;
+  margin-left: 3px;
+}
+
+
+.shiftMaster-input {
+  flex: 1;
+  max-width: 450px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #d7d7d7;
+  border-radius: 6px;
+
+  outline: none;
+  font-size: 14px;
+
+  transition: .25s;
+}
+
+
+.shiftMaster-input:focus {
+  border-color:#0d6efd;
+  box-shadow:0 0 0 2px rgba(13,110,253,.08);
+}
+
+
+/* ==========================================
+   BUTTONS
+========================================== */
+
+.shiftMaster-button-group {
+
+  display:flex;
+  gap:10px;
+  margin-top:25px;
+  margin-bottom:20px;
+
+}
+
+
+.shiftMaster-button-group button {
+
+  min-width:95px;
+
+  padding:10px 18px;
+
+  border:none;
+
+  border-radius:6px;
+
+  font-size:14px;
+
+  cursor:pointer;
+
+  color:#fff;
+
+  transition:.25s;
+
+}
+
+
+.shiftMaster-button-group button:hover{
+  opacity:.9;
+}
+
+
+.shiftMaster-button-group button:active{
+  transform:scale(.98);
+}
+
+
+/* SAVE */
+
+.shiftMaster-save-btn{
+  background:#28a745;
+}
+
+
+/* UPDATE */
+
+.shiftMaster-update-btn{
+  background:#007bff;
+}
+
+
+/* DELETE */
+
+.shiftMaster-delete-btn{
+  background:#dc3545;
+}
+
+
+/* CLEAR */
+
+.shiftMaster-clear-btn{
+  background:#ffc107;
+  color:#000 !important;
+}
+
+
+
+/* ==========================================
+   SEARCH
+========================================== */
+
+.shiftMaster-search-container {
+
+  display:flex;
+
+  align-items:center;
+
+  gap:10px;
+
+}
+
+
+.shiftMaster-search-container .shiftMaster-label{
+
+  width:auto;
+
+  min-width:120px;
+
+}
+
+
+.shiftMaster-search-input {
+
+  width:100%;
+
+  max-width:450px;
+
+  padding:10px 12px;
+
+  border:1px solid #ced4da;
+
+  border-radius:6px;
+
+  font-size:14px;
+
+  outline:none;
+
+}
+
+
+.shiftMaster-search-input:focus{
+
+ border-color:#0d6efd;
+
+ box-shadow:0 0 5px rgba(13,110,253,.25);
+
+}
+
+
+
+/* ==========================================
+   TABLE
+========================================== */
+
+
+.shiftMaster-table-responsive{
+
+ background:#fff;
+
+ border-radius:8px;
+
+ overflow-x:auto;
+
+ box-shadow:0 2px 10px rgba(0,0,0,.08);
+
+}
+
+
+
+.shiftMaster-table{
+
+ width:100%;
+
+ min-width:700px;
+
+ border-collapse:collapse;
+
+}
+
+
+.shiftMaster-table thead{
+
+ background:#007bff;
+
+}
+
+
+.shiftMaster-table th{
+
+ color:#fff;
+
+ padding:12px;
+
+ text-align:left;
+
+ font-size:14px;
+
+ font-weight:600;
+
+}
+
+
+.shiftMaster-table td{
+
+ padding:12px;
+
+ font-size:14px;
+
+ border-bottom:1px solid #ececec;
+
+}
+
+
+.shiftMaster-table tbody tr{
+
+ cursor:pointer;
+
+ transition:.2s;
+
+}
+
+
+.shiftMaster-table tbody tr:hover{
+
+ background:#eef5ff;
+
+}
+
+
+.shiftMaster-selected-row{
+
+ background:#dcecff !important;
+
+}
+
+
+.shiftMaster-no-data{
+
+ text-align:center;
+
+ padding:20px;
+
+ color:#666;
+
+}
+
+
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+
+.shiftMaster-table-responsive::-webkit-scrollbar{
+
+ height:10px;
+
+}
+
+
+.shiftMaster-table-responsive::-webkit-scrollbar-track{
+
+ background:#f2f2f2;
+
+}
+
+
+.shiftMaster-table-responsive::-webkit-scrollbar-thumb{
+
+ background:#bdbdbd;
+
+ border-radius:20px;
+
+}
+
+/* ==========================================
+   SEARCH CARD
+========================================== */
+
+.shiftMaster-search-card {
+
+  background: #fff;
+
+  padding: 18px;
+
+  border-radius: 10px;
+
+  margin-bottom: 20px;
+
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+
+}
+
+
+/* Search Row */
+
+.shiftMaster-search-container {
+
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+}
+
+
+.shiftMaster-search-label {
+
+  min-width: 120px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #333;
+
+}
+
+
+.shiftMaster-search-input {
+
+  width: 100%;
+
+  max-width: 560px;
+
+  padding: 10px 12px;
+
+  border: 1px solid #ced4da;
+
+  border-radius: 6px;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition: all 0.25s ease;
+
+}
+
+
+.shiftMaster-search-input:focus {
+
+  border-color: #0d6efd;
+
+  box-shadow: 0 0 5px rgba(13,110,253,0.25);
+
+}
+
+.shiftMaster-search-input::placeholder {
+
+  color: #999;
+
+}
+
+
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+
+@media(max-width:1200px){
+
+.shiftMaster-form-group{
+
+ flex-direction:column;
+
+ align-items:flex-start;
+
+}
+
+
+.shiftMaster-label{
+
+ width:100%;
+
+ margin-bottom:6px;
+
+}
+
+
+.shiftMaster-input{
+
+ width:100%;
+
+ max-width:100%;
+
+}
+
+}
+
+
+
+@media(max-width:768px){
+
+
+.shiftMaster-master{
+
+ padding:15px;
+
+}
+
+
+.shiftMaster-button-group{
+
+ flex-wrap:wrap;
+
+}
+
+
+.shiftMaster-button-group button{
+
+ width:100%;
+
+}
+
+
+.shiftMaster-search-container{
+
+ flex-direction:column;
+
+ align-items:flex-start;
+
+}
+
+
+.shiftMaster-search-input{
+
+ width:100%;
+
+ max-width:100%;
+
+}
+
+
+}
+
+
+
+@media(max-width:480px){
+
+.shiftMaster-title h2{
+
+ font-size:20px;
+
+}
+
+
+.shiftMaster-card{
+
+ padding:14px;
+
+}
+
+}

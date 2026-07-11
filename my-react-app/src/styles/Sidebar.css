@@ -1,0 +1,443 @@
+/* ===========================
+   SIDEBAR (BASE)
+=========================== */
+
+.sidebar{
+
+    position:fixed;
+
+    top:64px;
+
+    left:0;
+
+    width:280px;
+
+    height:calc(100vh - 64px);
+
+    background:#fff;
+
+    border-right:1px solid #e5e7eb;
+
+    transition:width .3s ease;
+
+    z-index:1100;
+
+    overflow-y:auto;
+}
+
+
+
+.sidebar-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  margin-left: auto;
+  color: #374151;
+}
+
+/* COLLAPSED STATE */
+.sidebar.collapsed{
+    width:75px;
+    overflow-x:hidden;
+    overflow-y:auto;
+}
+
+.sidebar.collapsed .sidebar-menu {
+  padding: 10px 6px;
+}
+
+
+.sidebar.collapsed .submenu {
+  position: absolute;
+  left: 75px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 180px;
+  z-index: 99999;
+
+  margin-left: 0;     /* IMPORTANT RESET */
+  padding-left: 0;    /* IMPORTANT RESET */
+  display: none !important;
+}
+
+.menu-icon {
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.sidebar.collapsed .menu-icon {
+  transform: scale(1.1);
+}
+
+.sidebar.collapsed .submenu-item {
+  padding: 8px 12px;
+  display: block;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .submenu-item:hover {
+  background: #f3f4f6;
+  padding-left: 12px;
+}
+
+/* ===========================
+   LOGO
+=========================== */
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px;
+}
+
+.logo-image {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+}
+
+.sidebar-logo h2 {
+  margin: 0;
+  color: #2563eb;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.sidebar-logo span {
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  justify-content: center;
+}
+
+.sidebar.collapsed .logo-image {
+  width: 38px;
+  height: 38px;
+}
+
+/* hide logo text when collapsed */
+.sidebar.collapsed .sidebar-logo h2,
+.sidebar.collapsed .sidebar-logo span {
+  display: none;
+}
+
+/* ===========================
+   MENU
+=========================== */
+
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.sidebar-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-menu::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 20px;
+}
+
+/* ===========================
+   MENU ITEM
+=========================== */
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .25s ease;
+  font-size: 15px;
+  white-space: nowrap;
+  position: relative;
+}
+
+.menu-item:hover {
+  background: #f3f4f6;
+  color: #2563eb;
+}
+
+/* center icons in collapsed mode */
+.sidebar.collapsed .menu-item {
+  justify-content: center;
+  align-items: center;
+  padding: 14px 0;
+  gap: 0;
+  position: relative;
+}
+
+/* hide text in collapsed mode */
+.sidebar.collapsed .menu-item span {
+  display: none;
+}
+
+.sidebar.collapsed .menu-item span {
+  display: none !important;
+}
+
+
+.sidebar.collapsed .menu-left {
+  flex: unset;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.sidebar.collapsed .menu-icon {
+  display: block !important;
+  font-size: 22px;
+  margin: 0 auto;
+}
+
+/* menu-left alignment */
+.menu-item .menu-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+/* icon size */
+.menu-icon {
+  font-size: 20px;
+}
+
+/* push arrow to right */
+.menu-item svg:last-child {
+  margin-left: auto;
+}
+
+/* hide arrows in collapsed mode */
+.sidebar.collapsed .menu-item svg:last-child {
+  display: none;
+}
+
+/* ===========================
+   ACTIVE STATE
+=========================== */
+
+.menu-item.active {
+  background: #2563eb;
+  color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.menu-item.active .menu-icon {
+  color: #ffffff;
+}
+
+
+/* ===========================
+   SUBMENU
+=========================== */
+.submenu {
+  margin-left: 18px;
+  border-left: 2px solid #e5e7eb;
+  padding-left: 12px;
+  margin-bottom: 10px;
+  position: static; /* IMPORTANT RESET */
+  background: transparent;
+  box-shadow: none;
+  min-width: unset;
+}
+
+.submenu-item {
+  display: block;
+  text-decoration: none;
+  color: #6b7280;
+  padding: 10px 0;
+  font-size: 14px;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+
+.submenu-item:hover {
+  color: #2563eb;
+  padding-left: 8px;
+}
+
+
+.submenu .active {
+  background: transparent;
+  color: #2563eb !important;
+  font-weight: 600;
+  
+}
+
+/* ===========================
+   FOOTER
+=========================== */
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ===========================
+   LOGOUT BUTTON
+=========================== */
+
+.logout-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  outline: none;
+  border-radius: 12px;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  transition: .25s;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+/* hide logout text in collapsed */
+.sidebar.collapsed .logout-btn {
+  justify-content: center;
+}
+
+.sidebar.collapsed .logout-btn span {
+  display: none;
+}
+
+/* ===========================
+   TOOLTIP (COLLAPSED MODE)
+=========================== */
+
+.cursor-tooltip {
+  position: fixed;
+  background: #111827;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  z-index: 999999;
+
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transform: translate(10px, 10px);
+  animation: fadeIn 0.1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(5px, 5px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(10px, 10px);
+  }
+}
+
+/* ===========================
+   MOBILE
+=========================== */
+
+@media (max-width: 992px) {
+  .sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: .3s;
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+}
+
+.sidebar-logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.sidebar-logout-modal {
+  width: 380px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 12px 35px rgba(0,0,0,.25);
+  animation: sidebarLogoutPopup .25s ease;
+}
+
+@keyframes sidebarLogoutPopup {
+  from {
+    transform: scale(.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.sidebar-logout-modal h4 {
+  margin-bottom: 12px;
+}
+
+.sidebar-logout-modal p {
+  margin-bottom: 24px;
+  color: #6b7280;
+}
+
+.sidebar-logout-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.sidebar-logout-cancel-btn,
+.sidebar-logout-confirm-btn {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.sidebar-logout-cancel-btn {
+  background: #e5e7eb;
+}
+
+.sidebar-logout-confirm-btn {
+  background: #dc2626;
+  color: #fff;
+}
