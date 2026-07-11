@@ -59,10 +59,10 @@ const SevaCoordinatorMaster = () => {
   // ==========================
 
   const UTSAV_API =
-    "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
+    "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
 
   const SEVA_API =
-    "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList";
+    "https://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList";
 
   // ==========================
   // SAMPLE DATA

@@ -201,7 +201,7 @@ const SevaMaster = () => {
   const fetchUtsavList = async () => {
     try {
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList",
+        "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList",
       );
 
       if (!response.ok) {

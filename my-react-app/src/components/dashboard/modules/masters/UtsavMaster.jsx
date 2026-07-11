@@ -6,16 +6,16 @@ import "../../../../styles/masters/UtsavMaster.css";
 // ===============================
 
 const ADD_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/AddUtsav";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/AddUtsav";
 
 const UPDATE_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/UpdateUtsav";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/UpdateUtsav";
 
 const DELETE_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/DeleteUtsav";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/DeleteUtsav";
 
 const GET_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
 
 const UtsavMaster = () => {
   // ===============================
