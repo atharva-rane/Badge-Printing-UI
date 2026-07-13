@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FiHome,
@@ -15,10 +15,13 @@ import {
 
 import "../../../styles/Sidebar.css";
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
-  const [mastersOpen, setMastersOpen] = useState(true);
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [volunteerOpen, setVolunteerOpen] = useState(false);
+const Sidebar = ({ sidebarOpen, setSidebarOpen, sidebarRef }) => {
+  // ============================
+  // STATES
+  // ============================
+
+  const [expandedMenu, setExpandedMenu] = useState("masters");
+  const [pendingMenu, setPendingMenu] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [tooltip, setTooltip] = useState({
@@ -29,19 +32,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   });
 
   const location = useLocation();
-
   const navigate = useNavigate();
 
+  const isCollapsed = !sidebarOpen;
+
+  // ============================
+  // LOGOUT
+  // ============================
+
   const handleLogout = () => {
-    // Close popup
     setShowLogoutModal(false);
 
-    // Remove login data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.clear();
 
-    // Redirect to login page
     navigate("/");
   };
 
@@ -49,30 +54,37 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     setShowLogoutModal(false);
   };
 
-  const isCollapsed = !sidebarOpen;
+  // ============================
+  // EXPANDABLE MENU
+  // ============================
 
-  // 🔥 ONLY for Masters / Upload / Volunteer
-  const ensureSidebarOpen = (callback) => {
-    if (isCollapsed) {
+  const handleExpandableMenu = (menu) => {
+    if (!sidebarOpen) {
+      setPendingMenu(menu);
       setSidebarOpen(true);
-      setTimeout(callback, 0);
-    } else {
-      callback();
+      return;
     }
+
+    setExpandedMenu((prev) => (prev === menu ? null : menu));
   };
 
-  // ================= ACTIVE STATES =================
+  useEffect(() => {
+    if (!sidebarOpen || !pendingMenu) return;
+
+    setExpandedMenu(pendingMenu);
+    setPendingMenu(null);
+  }, [sidebarOpen, pendingMenu]);
+
+  // ============================
+  // ACTIVE STATES
+  // ============================
+
   const mastersActive =
     location.pathname.includes("/utsav-master") ||
     location.pathname.includes("/seva-master") ||
     location.pathname.includes("/seva-coordinator-master") ||
     location.pathname.includes("/shift-master") ||
     location.pathname.includes("/center-master");
-
-  const uploadActive =
-    location.pathname.includes("/shgg-data") ||
-    location.pathname.includes("/one-day-data") ||
-    location.pathname.includes("/center-data");
 
   const volunteerActive =
     location.pathname.includes("/seva-allocation") ||
@@ -82,7 +94,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const subMenuClass = ({ isActive }) =>
     isActive ? "submenu-item active" : "submenu-item";
 
-  // ================= TOOLTIP =================
+  // ============================
+  // TOOLTIP
+  // ============================
+
   const handleMouseMove = (e, label) => {
     if (isCollapsed) {
       setTooltip({
@@ -95,13 +110,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   };
 
   const hideTooltip = () => {
-    setTooltip((prev) => ({ ...prev, show: false }));
+    setTooltip((prev) => ({
+      ...prev,
+      show: false,
+    }));
   };
 
   return (
-    <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
+    <aside
+      ref={sidebarRef}
+      className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}
+    >
       <div className="sidebar-menu">
-        {/* DASHBOARD */}
+        {/* ================= DASHBOARD ================= */}
+
         <NavLink
           to="/home"
           end
@@ -116,9 +138,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         </NavLink>
 
         {/* ================= MASTERS ================= */}
+
         <div
           className={`menu-item ${mastersActive ? "active" : ""}`}
-          onClick={() => ensureSidebarOpen(() => setMastersOpen((p) => !p))}
+          onClick={() => handleExpandableMenu("masters")}
           onMouseMove={(e) => handleMouseMove(e, "Masters")}
           onMouseLeave={hideTooltip}
         >
@@ -128,26 +151,34 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {sidebarOpen &&
-            (mastersOpen ? <FiChevronDown /> : <FiChevronRight />)}
+            (expandedMenu === "masters" ? (
+              <FiChevronDown />
+            ) : (
+              <FiChevronRight />
+            ))}
         </div>
 
-        {mastersOpen && (
+        {expandedMenu === "masters" && (
           <div className="submenu">
             <NavLink to="/home/utsav-master" className={subMenuClass}>
               Utsav Master
             </NavLink>
+
             <NavLink to="/home/seva-master" className={subMenuClass}>
               Seva Master
             </NavLink>
+
             <NavLink
               to="/home/seva-coordinator-master"
               className={subMenuClass}
             >
               Seva Coordinator Master
             </NavLink>
+
             <NavLink to="/home/shift-master" className={subMenuClass}>
               Shift Master
             </NavLink>
+
             <NavLink to="/home/center-master" className={subMenuClass}>
               Center Master
             </NavLink>
@@ -155,38 +186,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         )}
 
         {/* ================= UPLOAD ================= */}
-        <div
-          className={`menu-item ${uploadActive ? "active" : ""}`}
-          onClick={() => ensureSidebarOpen(() => setUploadOpen((p) => !p))}
+
+        <NavLink
+          to="/home/upload-raw-data"
+          className={({ isActive }) =>
+            isActive ? "menu-item active" : "menu-item"
+          }
           onMouseMove={(e) => handleMouseMove(e, "Upload")}
           onMouseLeave={hideTooltip}
         >
-          <div className="menu-left">
-            <FiUploadCloud className="menu-icon" />
-            {sidebarOpen && <span>Upload</span>}
-          </div>
-
-          {sidebarOpen && (uploadOpen ? <FiChevronDown /> : <FiChevronRight />)}
-        </div>
-
-        {uploadOpen && (
-          <div className="submenu">
-            <NavLink to="/home/shgg-data" className={subMenuClass}>
-              SHGG Data
-            </NavLink>
-            <NavLink to="/home/one-day-data" className={subMenuClass}>
-              One-Day Data
-            </NavLink>
-            <NavLink to="/home/center-data" className={subMenuClass}>
-              Center Data
-            </NavLink>
-          </div>
-        )}
-
+          <FiUploadCloud className="menu-icon" />
+          {sidebarOpen && <span>Upload</span>}
+        </NavLink>
         {/* ================= VOLUNTEER ================= */}
+
         <div
           className={`menu-item ${volunteerActive ? "active" : ""}`}
-          onClick={() => ensureSidebarOpen(() => setVolunteerOpen((p) => !p))}
+          onClick={() => handleExpandableMenu("volunteer")}
           onMouseMove={(e) => handleMouseMove(e, "Volunteer Activities")}
           onMouseLeave={hideTooltip}
         >
@@ -196,17 +212,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           </div>
 
           {sidebarOpen &&
-            (volunteerOpen ? <FiChevronDown /> : <FiChevronRight />)}
+            (expandedMenu === "volunteer" ? (
+              <FiChevronDown />
+            ) : (
+              <FiChevronRight />
+            ))}
         </div>
 
-        {volunteerOpen && (
+        {expandedMenu === "volunteer" && (
           <div className="submenu">
             <NavLink to="/home/seva-allocation" className={subMenuClass}>
               Seva Allocation
             </NavLink>
+
             <NavLink to="/home/badge-generation" className={subMenuClass}>
               Badge Generation
             </NavLink>
+
             <NavLink to="/home/mark-attendance" className={subMenuClass}>
               Mark Attendance
             </NavLink>
@@ -214,9 +236,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         )}
 
         {/* ================= OTHERS ================= */}
+
         <NavLink
           to="/home/alert-mails"
-          className="menu-item"
+          className={({ isActive }) =>
+            isActive ? "menu-item active" : "menu-item"
+          }
           onMouseMove={(e) => handleMouseMove(e, "Alert Mails")}
           onMouseLeave={hideTooltip}
         >
@@ -226,7 +251,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <NavLink
           to="/home/attendance-report"
-          className="menu-item"
+          className={({ isActive }) =>
+            isActive ? "menu-item active" : "menu-item"
+          }
           onMouseMove={(e) => handleMouseMove(e, "Attendance Report")}
           onMouseLeave={hideTooltip}
         >
@@ -236,7 +263,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         <NavLink
           to="/home/settings"
-          className="menu-item"
+          className={({ isActive }) =>
+            isActive ? "menu-item active" : "menu-item"
+          }
           onMouseMove={(e) => handleMouseMove(e, "Settings")}
           onMouseLeave={hideTooltip}
         >
@@ -246,6 +275,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       </div>
 
       {/* ================= LOGOUT ================= */}
+
       <div className="sidebar-footer">
         <button
           className="logout-btn"
@@ -259,6 +289,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       </div>
 
       {/* ================= TOOLTIP ================= */}
+
       {tooltip.show && (
         <div
           className="cursor-tooltip"
@@ -270,6 +301,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           {tooltip.text}
         </div>
       )}
+
+      {/* ================= LOGOUT MODAL ================= */}
 
       {showLogoutModal && (
         <div className="sidebar-logout-overlay">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Loader from "../../../Loader";
 import "../../../../styles/masters/UtsavMaster.css";
 
 // ===============================
@@ -17,31 +18,54 @@ const DELETE_API =
 const GET_API =
   "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
 
+// ===============================
+// COMPONENT
+// ===============================
+
 const UtsavMaster = () => {
   // ===============================
-  // States
+  // STATES
   // ===============================
 
   const [utsavName, setUtsavName] = useState("");
+
   const [searchText, setSearchText] = useState("");
+
   const [selectedId, setSelectedId] = useState(null);
 
   const [utsavList, setUtsavList] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+
+  const [loaderText, setLoaderText] = useState("");
+
+  // ===============================
+  // MODAL STATES
+  // ===============================
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [successMessage, setSuccessMessage] = useState("");
 
   // ===============================
-  // Generic API Request
+  // LOADER STATES
+  // ===============================
+
+  const [progress, setProgress] = useState(null);
+
+  // ===============================
+  // GENERIC API REQUEST
   // ===============================
 
   const apiRequest = async (url, method = "POST", data = null) => {
     try {
       const options = {
         method,
+
         headers: {
           "Content-Type": "application/json",
         },
@@ -61,17 +85,20 @@ const UtsavMaster = () => {
 
       return text ? JSON.parse(text) : null;
     } catch (error) {
-      console.error(error);
+      console.error("API Error:", error);
+
       throw error;
     }
   };
-
   // ===============================
-  // Get Utsav List
+  // GET UTSAV LIST
   // ===============================
 
   const getUtsavList = async () => {
     try {
+      setLoading(true);
+      setProgress(null);
+
       const response = await fetch(GET_API);
 
       if (!response.ok) {
@@ -83,12 +110,15 @@ const UtsavMaster = () => {
       setUtsavList(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching Utsav List :", error);
+
       setUtsavList([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   // ===============================
-  // Initial Load
+  // INITIAL LOAD
   // ===============================
 
   useEffect(() => {
@@ -96,14 +126,15 @@ const UtsavMaster = () => {
   }, []);
 
   // ===============================
-  // Search
+  // SEARCH
   // ===============================
 
   const filteredUtsavs = utsavList.filter((item) =>
     item.utsavName.toLowerCase().includes(searchText.toLowerCase()),
   );
+
   // ===============================
-  // Save
+  // SAVE
   // ===============================
 
   const handleSave = async () => {
@@ -127,6 +158,12 @@ const UtsavMaster = () => {
     };
 
     try {
+      // Loader message
+      setLoaderText("Saving Utsav...");
+
+      // Show loader
+      setLoading(true);
+
       await apiRequest(ADD_API, "POST", payload);
 
       await getUtsavList();
@@ -134,19 +171,22 @@ const UtsavMaster = () => {
       handleClear();
 
       setSuccessMessage("Saved successfully.");
+
       setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
+
       alert("Error while saving Utsav.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const closeSuccessModal = () => {
     setShowSuccessModal(false);
   };
-
   // ===============================
-  // Enter Key
+  // ENTER KEY
   // ===============================
 
   const handleEnterKey = (e) => {
@@ -162,26 +202,29 @@ const UtsavMaster = () => {
   };
 
   // ===============================
-  // Row Selection
+  // ROW SELECTION
   // ===============================
 
   const handleRowSelect = (item) => {
     setSelectedId(item.utsavID);
+
     setUtsavName(item.utsavName);
   };
 
   // ===============================
-  // Update
+  // UPDATE
   // ===============================
 
   const handleUpdate = () => {
     if (selectedId === null) {
       alert("Please select a record.");
+
       return;
     }
 
     if (!utsavName.trim()) {
       alert("Please enter Utsav Name.");
+
       return;
     }
 
@@ -193,16 +236,25 @@ const UtsavMaster = () => {
 
     if (duplicate) {
       alert("Another Utsav with this name already exists.");
+
       return;
     }
 
     setShowUpdateModal(true);
   };
 
+  // ===============================
+  // CONFIRM UPDATE
+  // ===============================
+
   const confirmUpdate = async () => {
     try {
+      setLoaderText("Updating Utsav...");
+      setLoading(true);
+
       const payload = {
         utsavID: selectedId,
+
         utsavName: utsavName.trim(),
       };
 
@@ -215,32 +267,43 @@ const UtsavMaster = () => {
       handleClear();
 
       setSuccessMessage("Updated successfully.");
+
       setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
+
       alert("Error while updating Utsav.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const cancelUpdate = () => {
     setShowUpdateModal(false);
   };
-
   // ===============================
-  // Delete
+  // DELETE
   // ===============================
 
   const handleDelete = () => {
     if (selectedId === null) {
       alert("Please select a record.");
+
       return;
     }
 
     setShowDeleteModal(true);
   };
 
+  // ===============================
+  // CONFIRM DELETE
+  // ===============================
+
   const confirmDelete = async () => {
     try {
+      setLoaderText("Deleting Utsav...");
+      setLoading(true);
+
       const payload = {
         utsavID: selectedId,
       };
@@ -254,10 +317,14 @@ const UtsavMaster = () => {
       handleClear();
 
       setSuccessMessage("Deleted successfully.");
+
       setShowSuccessModal(true);
     } catch (error) {
       console.error(error);
+
       alert("Error while deleting Utsav.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -266,13 +333,15 @@ const UtsavMaster = () => {
   };
 
   // ===============================
-  // Clear
+  // CLEAR
   // ===============================
 
   const handleClear = () => {
     setSelectedId(null);
+
     setUtsavName("");
   };
+
   // ===============================
   // UI
   // ===============================
@@ -280,22 +349,28 @@ const UtsavMaster = () => {
   return (
     <div className="utsavMaster-master">
       {/* ===============================
-          Header
+          LOADER
+      =============================== */}
+
+      <Loader loading={loading} text={loaderText} />
+
+      {/* ===============================
+          HEADER
       =============================== */}
 
       <div className="utsavMaster-header">
         <div className="utsavMaster-title">
           <h2>Utsav Master</h2>
+
           <p>Manage Utsav Records</p>
         </div>
       </div>
-
       {/* ===============================
-          Form Card
+          FORM CARD
       =============================== */}
 
       <div className="utsavMaster-card">
-        {/* Utsav Name */}
+        {/* UTSAV NAME */}
 
         <div className="utsavMaster-form-group">
           <label className="utsavMaster-label">
@@ -314,7 +389,7 @@ const UtsavMaster = () => {
           />
         </div>
 
-        {/* Buttons */}
+        {/* BUTTONS */}
 
         <div className="utsavMaster-button-group">
           <button
@@ -352,8 +427,8 @@ const UtsavMaster = () => {
       </div>
 
       {/* ===============================
-    Search Card
-=============================== */}
+          SEARCH CARD
+      =============================== */}
 
       <div className="utsavMaster-card">
         <div className="utsavMaster-search-container">
@@ -369,10 +444,9 @@ const UtsavMaster = () => {
           />
         </div>
       </div>
-
       {/* ===============================
-    Table
-=============================== */}
+          TABLE
+      =============================== */}
 
       <div className="utsavMaster-card">
         <div className="utsavMaster-table-responsive">
@@ -380,6 +454,7 @@ const UtsavMaster = () => {
             <thead>
               <tr>
                 <th width="80">Sr.</th>
+
                 <th>Utsav Name</th>
               </tr>
             </thead>
@@ -395,7 +470,9 @@ const UtsavMaster = () => {
                         ? "utsavMaster-selected-row"
                         : ""
                     }
-                    style={{ cursor: "pointer" }}
+                    style={{
+                      cursor: "pointer",
+                    }}
                   >
                     <td>{index + 1}</td>
 
@@ -413,7 +490,7 @@ const UtsavMaster = () => {
           </table>
         </div>
         {/* ===============================
-            Success Popup
+            SUCCESS POPUP
         =============================== */}
 
         {showSuccessModal && (
@@ -437,7 +514,7 @@ const UtsavMaster = () => {
         )}
 
         {/* ===============================
-            Update Confirmation Popup
+            UPDATE CONFIRMATION POPUP
         =============================== */}
 
         {showUpdateModal && (
@@ -467,9 +544,8 @@ const UtsavMaster = () => {
             </div>
           </div>
         )}
-
         {/* ===============================
-            Delete Confirmation Popup
+            DELETE CONFIRMATION POPUP
         =============================== */}
 
         {showDeleteModal && (

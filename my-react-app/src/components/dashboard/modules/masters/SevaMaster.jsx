@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import "../../../../styles/masters/SevaMaster.css";
 import { FaTrashAlt } from "react-icons/fa";
+import Loader from "../../../Loader";
 
 const SevaMaster = () => {
   // =====================
@@ -28,6 +29,10 @@ const SevaMaster = () => {
 
   const [sevaList, setSevaList] = useState([]);
 
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [loaderText, setLoaderText] = useState("");
+
   // =====================
   // Select Row
   // =====================
@@ -41,6 +46,10 @@ const SevaMaster = () => {
   // =====================
   // Add
   // =====================
+  // =====================
+  // Add
+  // =====================
+
   const handleSave = async () => {
     if (!utsav || !sevaName.trim() || !requirement) {
       alert("Please fill all required fields.");
@@ -48,17 +57,24 @@ const SevaMaster = () => {
     }
 
     try {
+      setLoaderText("Saving Seva...");
+      setLoading(true);
+
       const payload = {
         utsavName: utsav,
+
         sevaName: sevaName.trim(),
+
         requirement: Number(requirement),
       };
 
       const response = await fetch("----- Paste Your Link Here -----", {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(payload),
       });
 
@@ -67,6 +83,7 @@ const SevaMaster = () => {
       }
 
       setSuccessMessage("Saved successfully.");
+
       setShowSuccessModal(true);
 
       fetchSevaList();
@@ -74,7 +91,10 @@ const SevaMaster = () => {
       handleClear();
     } catch (error) {
       console.error(error);
+
       alert("Unable to save record.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,25 +134,42 @@ const SevaMaster = () => {
   };
 
   const confirmUpdate = () => {
-    const updatedList = sevaList.map((item) =>
-      item.id === selectedId
-        ? {
-            ...item,
-            sevaName: sevaName.trim(),
-            requirement: Number(requirement),
-            utsavName: utsav,
-          }
-        : item,
-    );
+    try {
+      setLoaderText("Updating Seva...");
+      setLoading(true);
 
-    setSevaList(updatedList);
+      setTimeout(() => {
+        const updatedList = sevaList.map((item) =>
+          item.id === selectedId
+            ? {
+                ...item,
 
-    setShowUpdateModal(false);
+                sevaName: sevaName.trim(),
 
-    setSuccessMessage("Updated successfully.");
-    setShowSuccessModal(true);
+                requirement: Number(requirement),
 
-    handleClear();
+                utsavName: utsav,
+              }
+            : item,
+        );
+
+        setSevaList(updatedList);
+
+        setShowUpdateModal(false);
+
+        setLoading(false);
+
+        setSuccessMessage("Updated successfully.");
+
+        setShowSuccessModal(true);
+
+        handleClear();
+      }, 800);
+    } catch (error) {
+      console.error(error);
+
+      setLoading(false);
+    }
   };
 
   const cancelUpdate = () => {
@@ -153,14 +190,28 @@ const SevaMaster = () => {
   };
 
   const confirmDelete = () => {
-    setSevaList((prev) => prev.filter((item) => item.id !== selectedId));
+    try {
+      setLoaderText("Deleting Seva...");
+      setLoading(true);
 
-    setShowDeleteModal(false);
+      setTimeout(() => {
+        setSevaList((prev) => prev.filter((item) => item.id !== selectedId));
 
-    setSuccessMessage("Deleted successfully.");
-    setShowSuccessModal(true);
+        setShowDeleteModal(false);
 
-    handleClear();
+        setLoading(false);
+
+        setSuccessMessage("Deleted successfully.");
+
+        setShowSuccessModal(true);
+
+        handleClear();
+      }, 800);
+    } catch (error) {
+      console.error(error);
+
+      setLoading(false);
+    }
   };
 
   const cancelDelete = () => {
@@ -260,6 +311,9 @@ const SevaMaster = () => {
 
   return (
     <div className="seva-master">
+      {/* Loader */}
+      <Loader loading={loading} progress={progress} text={loaderText} />
+
       <h2 className="seva-title">Seva Master</h2>
 
       {/* Mode Switch */}

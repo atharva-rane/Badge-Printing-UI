@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import "../../../../styles/masters/SevaCoordinatorMaster.css";
 import { FaTrashAlt } from "react-icons/fa";
+import Loader from "../../../Loader";
 
 const SevaCoordinatorMaster = () => {
   // ==========================
@@ -8,6 +9,10 @@ const SevaCoordinatorMaster = () => {
   // ==========================
 
   const [mode, setMode] = useState("single");
+
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(null);
+  const [loaderText, setLoaderText] = useState("");
 
   // ==========================
   // FORM INITIAL STATE
@@ -224,7 +229,6 @@ const SevaCoordinatorMaster = () => {
   const handleSave = () => {
     if (!formData.utsavId || !formData.sevaId || !formData.coordinator1Name) {
       alert("Please fill required fields.");
-
       return;
     }
 
@@ -236,25 +240,31 @@ const SevaCoordinatorMaster = () => {
 
     if (duplicate) {
       alert("This Seva Coordinator already exists.");
-
       return;
     }
 
-    const newRecord = {
-      id: Date.now(),
+    setLoaderText("Saving Seva Coordinator...");
+    setLoading(true);
 
-      recId: "SC" + String(coordinatorList.length + 1).padStart(3, "0"),
+    setTimeout(() => {
+      const newRecord = {
+        id: Date.now(),
 
-      ...formData,
-    };
+        recId: "SC" + String(coordinatorList.length + 1).padStart(3, "0"),
 
-    setCoordinatorList((prev) => [...prev, newRecord]);
+        ...formData,
+      };
 
-    setSuccessMessage("Saved successfully.");
+      setCoordinatorList((prev) => [...prev, newRecord]);
 
-    setShowSuccessModal(true);
+      setLoading(false);
 
-    handleClear();
+      setSuccessMessage("Saved successfully.");
+
+      setShowSuccessModal(true);
+
+      handleClear();
+    }, 800);
   };
 
   const closeSuccessModal = () => {
@@ -282,24 +292,32 @@ const SevaCoordinatorMaster = () => {
   };
 
   const confirmUpdate = () => {
-    const updatedList = coordinatorList.map((item) =>
-      item.id === selectedId
-        ? {
-            ...item,
-            ...formData,
-          }
-        : item,
-    );
+    setLoaderText("Updating Seva Coordinator...");
 
-    setCoordinatorList(updatedList);
+    setLoading(true);
 
-    setShowUpdateModal(false);
+    setTimeout(() => {
+      const updatedList = coordinatorList.map((item) =>
+        item.id === selectedId
+          ? {
+              ...item,
+              ...formData,
+            }
+          : item,
+      );
 
-    setSuccessMessage("Updated successfully.");
+      setCoordinatorList(updatedList);
 
-    setShowSuccessModal(true);
+      setLoading(false);
 
-    handleClear();
+      setShowUpdateModal(false);
+
+      setSuccessMessage("Updated successfully.");
+
+      setShowSuccessModal(true);
+
+      handleClear();
+    }, 800);
   };
 
   const cancelUpdate = () => {
@@ -321,15 +339,25 @@ const SevaCoordinatorMaster = () => {
   };
 
   const confirmDelete = () => {
-    setCoordinatorList((prev) => prev.filter((item) => item.id !== selectedId));
+    setLoaderText("Deleting Seva Coordinator...");
 
-    setShowDeleteModal(false);
+    setLoading(true);
 
-    setSuccessMessage("Deleted successfully.");
+    setTimeout(() => {
+      setCoordinatorList((prev) =>
+        prev.filter((item) => item.id !== selectedId),
+      );
 
-    setShowSuccessModal(true);
+      setLoading(false);
 
-    handleClear();
+      setShowDeleteModal(false);
+
+      setSuccessMessage("Deleted successfully.");
+
+      setShowSuccessModal(true);
+
+      handleClear();
+    }, 800);
   };
 
   const cancelDelete = () => {
@@ -538,6 +566,8 @@ const SevaCoordinatorMaster = () => {
 
   return (
     <div className="sevacoordinatormaster-page">
+      <Loader loading={loading} progress={progress} text={loaderText} />
+
       <h2 className="sevacoordinatormaster-title">Seva Coordinator Master</h2>
 
       {/* ==========================

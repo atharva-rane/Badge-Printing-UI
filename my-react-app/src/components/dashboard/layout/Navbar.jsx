@@ -4,22 +4,19 @@ import { FiMenu, FiSearch, FiBell, FiChevronDown } from "react-icons/fi";
 import { MdPrint } from "react-icons/md";
 import "../../../styles/Navbar.css";
 
-const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
+const Navbar = ({ sidebarOpen, setSidebarOpen, toggleButtonRef }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Close popup
     setShowLogoutModal(false);
 
-    // Remove login data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     sessionStorage.clear();
 
-    // Redirect to login page
     navigate("/");
   };
 
@@ -37,6 +34,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
       {/* LEFT */}
       <div className="navbar-left">
         <button
+          ref={toggleButtonRef}
           className="navbar-toggle"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
@@ -85,6 +83,7 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
           </div>
         )}
       </div>
+
       {showLogoutModal && (
         <div className="navbar-logout-overlay">
           <div className="navbar-logout-modal">

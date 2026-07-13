@@ -1,0 +1,134 @@
+/* ================================
+   OVERLAY
+================================ */
+
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(20, 20, 20, 0.45);
+  backdrop-filter: blur(4px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 99999;
+}
+
+/* ================================
+   BOX
+================================ */
+
+.loader-container {
+  width: 360px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 30px;
+
+  text-align: center;
+
+  box-shadow: 0 15px 40px rgba(0,0,0,.18);
+
+  animation: loaderPop .25s ease;
+}
+
+/* ================================
+   SPINNER
+================================ */
+
+.loader-spinner {
+  width: 70px;
+  height: 70px;
+
+  margin: auto;
+
+  border-radius: 50%;
+
+  border: 7px solid #e5e5e5;
+  border-top: 7px solid #2f80ed;
+
+  animation: loaderSpin .8s linear infinite;
+}
+
+/* ================================
+   TITLE
+================================ */
+
+.loader-title {
+  margin-top: 18px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* ================================
+   PROGRESS BAR
+================================ */
+
+.loader-progress-bar {
+  width: 100%;
+  height: 12px;
+
+  background: #ececec;
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  margin-top: 22px;
+}
+
+.loader-progress-fill {
+  height: 100%;
+
+  background: linear-gradient(90deg,#2f80ed,#56ccf2);
+
+  transition: width .25s ease;
+}
+
+/* ================================
+   PERCENTAGE
+================================ */
+
+.loader-percentage {
+  margin-top: 12px;
+
+  font-size: 18px;
+
+  font-weight: 600;
+
+  color: #2f80ed;
+}
+
+/* ================================
+   ANIMATION
+================================ */
+
+@keyframes loaderSpin {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+@keyframes loaderPop {
+
+  from {
+    opacity: 0;
+    transform: scale(.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+}

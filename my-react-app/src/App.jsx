@@ -17,9 +17,7 @@ import ShiftMaster from "./components/dashboard/modules/masters/ShiftMaster";
 import CenterMaster from "./components/dashboard/modules/masters/CenterMaster";
 
 // Upload
-import SHGGData from "./components/dashboard/modules/upload/SHGGData";
-import OneDayData from "./components/dashboard/modules/upload/OneDayData";
-import CenterData from "./components/dashboard/modules/upload/CenterData";
+import UploadRawData from "./components/dashboard/modules/upload/UploadRawData";
 
 // Volunteer
 import SevaAllocation from "./components/dashboard/modules/volunteer/SevaAllocation";
@@ -62,9 +60,7 @@ function App() {
             <Route path="center-master" element={<CenterMaster />} />
 
             {/* UPLOAD */}
-            <Route path="shgg-data" element={<SHGGData />} />
-            <Route path="one-day-data" element={<OneDayData />} />
-            <Route path="center-data" element={<CenterData />} />
+            <Route path="upload-raw-data" element={<UploadRawData />} />
 
             {/* VOLUNTEER */}
             <Route path="seva-allocation" element={<SevaAllocation />} />
