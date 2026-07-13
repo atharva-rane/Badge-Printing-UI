@@ -46,9 +46,6 @@ const SevaMaster = () => {
   // =====================
   // Add
   // =====================
-  // =====================
-  // Add
-  // =====================
 
   const handleSave = async () => {
     if (!utsav || !sevaName.trim() || !requirement) {
@@ -68,15 +65,18 @@ const SevaMaster = () => {
         requirement: Number(requirement),
       };
 
-      const response = await fetch("----- Paste Your Link Here -----", {
-        method: "POST",
+      const response = await fetch(
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/AddUtsav",
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify(payload),
         },
-
-        body: JSON.stringify(payload),
-      });
+      );
 
       if (!response.ok) {
         throw new Error("Failed to save Seva.");
@@ -133,41 +133,44 @@ const SevaMaster = () => {
     setShowUpdateModal(true);
   };
 
-  const confirmUpdate = () => {
+  const confirmUpdate = async () => {
     try {
       setLoaderText("Updating Seva...");
       setLoading(true);
 
-      setTimeout(() => {
-        const updatedList = sevaList.map((item) =>
-          item.id === selectedId
-            ? {
-                ...item,
+      const payload = {
+        id: selectedId,
+        utsavName: utsav,
+        sevaName: sevaName.trim(),
+        requirement: Number(requirement),
+      };
 
-                sevaName: sevaName.trim(),
+      const response = await fetch(
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UpdateUtsav",
+        {
+          method: "PUT", // Change to POST if your API requires POST
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
 
-                requirement: Number(requirement),
+      if (!response.ok) {
+        throw new Error("Failed to update Seva.");
+      }
 
-                utsavName: utsav,
-              }
-            : item,
-        );
+      fetchSevaList();
 
-        setSevaList(updatedList);
+      setShowUpdateModal(false);
+      setSuccessMessage("Updated successfully.");
+      setShowSuccessModal(true);
 
-        setShowUpdateModal(false);
-
-        setLoading(false);
-
-        setSuccessMessage("Updated successfully.");
-
-        setShowSuccessModal(true);
-
-        handleClear();
-      }, 800);
+      handleClear();
     } catch (error) {
       console.error(error);
-
+      alert("Unable to update record.");
+    } finally {
       setLoading(false);
     }
   };
@@ -189,27 +192,41 @@ const SevaMaster = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     try {
       setLoaderText("Deleting Seva...");
       setLoading(true);
 
-      setTimeout(() => {
-        setSevaList((prev) => prev.filter((item) => item.id !== selectedId));
+      const payload = {
+        id: selectedId,
+      };
 
-        setShowDeleteModal(false);
+      const response = await fetch(
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/DeleteUtsav",
+        {
+          method: "DELETE", // Change to POST if your API requires POST
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
 
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to delete Seva.");
+      }
 
-        setSuccessMessage("Deleted successfully.");
+      fetchSevaList();
 
-        setShowSuccessModal(true);
+      setShowDeleteModal(false);
+      setSuccessMessage("Deleted successfully.");
+      setShowSuccessModal(true);
 
-        handleClear();
-      }, 800);
+      handleClear();
     } catch (error) {
       console.error(error);
-
+      alert("Unable to delete record.");
+    } finally {
       setLoading(false);
     }
   };
@@ -283,7 +300,9 @@ const SevaMaster = () => {
 
   const fetchSevaList = async () => {
     try {
-      const response = await fetch("----- Paste Your Link Here -----");
+      const response = await fetch(
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList",
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch Seva List");
