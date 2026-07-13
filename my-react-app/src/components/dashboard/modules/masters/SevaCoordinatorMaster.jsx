@@ -59,90 +59,36 @@ const SevaCoordinatorMaster = () => {
   // ==========================
 
   const UTSAV_API =
-    "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
+    "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
 
   const SEVA_API =
-    "https://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList";
+    "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList";
+
+  const COORDINATOR_API = "----- Paste Your Link Here -----";
 
   // ==========================
   // SAMPLE DATA
   // ==========================
 
-  const [coordinatorList, setCoordinatorList] = useState([
-    {
-      id: 10,
-      recId: "SC010",
-      utsavId: 4,
-      sevaId: 10,
-      coordinator1Name: "Aniket Sawant",
-      coordinator1Contact: "9988001122",
-      coordinator2Name: "",
-      coordinator2Contact: "",
-    },
+  const [utsavList, setUtsavList] = useState([]);
 
-    {
-      id: 11,
-      recId: "SC011",
-      utsavId: 4,
-      sevaId: 11,
-      coordinator1Name: "Sagar Chavan",
-      coordinator1Contact: "9876123456",
-      coordinator2Name: "Mahesh Naik",
-      coordinator2Contact: "9765987456",
-    },
+  const [sevaList, setSevaList] = useState([]);
 
-    {
-      id: 12,
-      recId: "SC012",
-      utsavId: 4,
-      sevaId: 12,
-      coordinator1Name: "Nitin Gawade",
-      coordinator1Contact: "9890011223",
-      coordinator2Name: "",
-      coordinator2Contact: "",
-    },
+  // Coordinator List
 
-    {
-      id: 13,
-      recId: "SC013",
-      utsavId: 5,
-      sevaId: 13,
-      coordinator1Name: "Deepak Khot",
-      coordinator1Contact: "9822003344",
-      coordinator2Name: "Rohit Patankar",
-      coordinator2Contact: "9811002233",
-    },
-
-    {
-      id: 14,
-      recId: "SC014",
-      utsavId: 5,
-      sevaId: 14,
-      coordinator1Name: "Swapnil Mane",
-      coordinator1Contact: "9870012345",
-      coordinator2Name: "",
-      coordinator2Contact: "",
-    },
-
-    {
-      id: 15,
-      recId: "SC015",
-      utsavId: 5,
-      sevaId: 15,
-      coordinator1Name: "Ketan Joshi",
-      coordinator1Contact: "9988997766",
-      coordinator2Name: "Vijay Patil",
-      coordinator2Contact: "9876655443",
-    },
-  ]);
+  const [coordinatorList, setCoordinatorList] = useState([]);
 
   // ==========================
   // LOAD UTSAV LIST
   // ==========================
 
   const loadUtsavList = async () => {
+    console.log("Loading Utsav...");
+
     try {
       const response = await fetch(UTSAV_API);
+
+      console.log("Status:", response.status);
 
       if (!response.ok) {
         throw new Error(`Utsav API Error : ${response.status}`);
@@ -150,17 +96,19 @@ const SevaCoordinatorMaster = () => {
 
       const result = await response.json();
 
+      console.log("Result:", result);
+
       const list = Array.isArray(result.data)
         ? result.data
         : Array.isArray(result)
           ? result
           : [];
 
+      console.log("Final List:", list);
+
       setUtsavOptions(list);
     } catch (error) {
       console.error("Error loading Utsav:", error);
-
-      setUtsavOptions([]);
     }
   };
 
@@ -193,35 +141,6 @@ const SevaCoordinatorMaster = () => {
       setAllSevaList([]);
     }
   };
-
-  // ==========================
-  // INITIAL API LOAD
-  // ==========================
-
-  useEffect(() => {
-    loadUtsavList();
-
-    loadSevaList();
-  }, []);
-
-  // ==========================
-  // FILTER SEVA BY UTSAV
-  // ==========================
-
-  useEffect(() => {
-    if (!formData.utsavId) {
-      setSevaOptions([]);
-
-      return;
-    }
-
-    const filtered = allSevaList.filter(
-      (item) =>
-        String(item.utsavID ?? item.utsavId) === String(formData.utsavId),
-    );
-
-    setSevaOptions(filtered);
-  }, [formData.utsavId, allSevaList]);
 
   // ==========================
   // GET DISPLAY NAMES
@@ -548,6 +467,75 @@ const SevaCoordinatorMaster = () => {
     reader.readAsText(file);
   };
 
+  // ==========================
+  // LOAD COORDINATOR LIST
+  // ==========================
+
+  const loadCoordinatorList = async () => {
+    try {
+      const response = await fetch(COORDINATOR_API);
+
+      if (!response.ok) {
+        throw new Error(`Coordinator API Error : ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      const list = Array.isArray(result.data)
+        ? result.data
+        : Array.isArray(result)
+          ? result
+          : [];
+
+      setCoordinatorList(list);
+    } catch (error) {
+      console.error("Error loading Coordinator:", error);
+
+      setCoordinatorList([]);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+
+    e.preventDefault();
+
+    if (mode !== "single") return;
+
+    if (showDeleteModal || showUpdateModal || showSuccessModal) return;
+
+    handleSave();
+  };
+
+  // ==========================
+  // INITIAL API LOAD
+  // ==========================
+
+  useEffect(() => {
+    loadUtsavList();
+    loadSevaList();
+    loadCoordinatorList();
+  }, []);
+
+  // ==========================
+  // FILTER SEVA BY UTSAV
+  // ==========================
+
+  useEffect(() => {
+    if (!formData.utsavId) {
+      setSevaOptions([]);
+
+      return;
+    }
+
+    const filtered = allSevaList.filter(
+      (item) =>
+        String(item.utsavID ?? item.utsavId) === String(formData.utsavId),
+    );
+
+    setSevaOptions(filtered);
+  }, [formData.utsavId, allSevaList]);
+
   return (
     <div className="sevacoordinatormaster-page">
       <h2 className="sevacoordinatormaster-title">Seva Coordinator Master</h2>
@@ -594,6 +582,7 @@ const SevaCoordinatorMaster = () => {
                 name="utsavId"
                 value={formData.utsavId}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               >
                 <option value="">Select Utsav</option>
 
@@ -619,6 +608,7 @@ const SevaCoordinatorMaster = () => {
                 name="sevaId"
                 value={formData.sevaId}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               >
                 <option value="">Select Seva</option>
 
@@ -641,6 +631,7 @@ const SevaCoordinatorMaster = () => {
                 placeholder="Enter Coordinator Name"
                 value={formData.coordinator1Name}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               />
             </div>
 
@@ -656,6 +647,7 @@ const SevaCoordinatorMaster = () => {
                 placeholder="Enter Contact Number"
                 value={formData.coordinator1Contact}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               />
             </div>
 
@@ -670,6 +662,7 @@ const SevaCoordinatorMaster = () => {
                 placeholder="Enter Coordinator Name"
                 value={formData.coordinator2Name}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               />
             </div>
 
@@ -685,6 +678,7 @@ const SevaCoordinatorMaster = () => {
                 placeholder="Enter Contact Number"
                 value={formData.coordinator2Contact}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               />
             </div>
           </div>
@@ -733,6 +727,7 @@ const SevaCoordinatorMaster = () => {
                 name="utsavId"
                 value={formData.utsavId}
                 onChange={handleChange}
+                onKeyDown={handleKeyDown}
               >
                 <option value="">Select Utsav </option>
 
@@ -761,6 +756,7 @@ const SevaCoordinatorMaster = () => {
                   accept=".csv,.xlsx,.xls"
                   className="sevacoordinatormaster-hidden-file-input"
                   onChange={(e) => setFile(e.target.files[0])}
+                  onKeyDown={handleKeyDown}
                 />
 
                 <div
@@ -818,6 +814,7 @@ const SevaCoordinatorMaster = () => {
           placeholder="Search Seva / Coordinator..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       </div>
 

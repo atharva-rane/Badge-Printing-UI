@@ -10,7 +10,7 @@ const SevaMaster = () => {
 
   const [utsav, setUtsav] = useState("");
   const [sevaName, setSevaName] = useState("");
-  const [requirement, setRequirement] = useState("");
+  const [requirement, setRequirement] = useState("0");
   const fileInputRef = useRef(null);
 
   const [selectedId, setSelectedId] = useState(null);
@@ -26,15 +26,7 @@ const SevaMaster = () => {
 
   const [utsavList, setUtsavList] = useState([]);
 
-  const [sevaList, setSevaList] = useState([
-    {
-      id: 1,
-      sevaCode: "AB01",
-      sevaName: "AADM Counter",
-      requirement: 1,
-      utsavName: "Ramnnavmi",
-    },
-  ]);
+  const [sevaList, setSevaList] = useState([]);
 
   // =====================
   // Select Row
@@ -49,22 +41,41 @@ const SevaMaster = () => {
   // =====================
   // Add
   // =====================
-  const handleSave = () => {
-    if (!sevaName || !utsav) return alert("Fill required fields");
+  const handleSave = async () => {
+    if (!utsav || !sevaName.trim() || !requirement) {
+      alert("Please fill all required fields.");
+      return;
+    }
 
-    const newItem = {
-      id: Date.now(),
-      sevaCode: "SV" + (sevaList.length + 1).toString().padStart(3, "0"),
-      sevaName,
-      requirement: Number(requirement),
-      utsavName: utsav,
-    };
+    try {
+      const payload = {
+        utsavName: utsav,
+        sevaName: sevaName.trim(),
+        requirement: Number(requirement),
+      };
 
-    setSuccessMessage("Saved successfully.");
-    setShowSuccessModal(true);
+      const response = await fetch("----- Paste Your Link Here -----", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    setSevaList((prev) => [newItem, ...prev]);
-    handleClear();
+      if (!response.ok) {
+        throw new Error("Failed to save Seva.");
+      }
+
+      setSuccessMessage("Saved successfully.");
+      setShowSuccessModal(true);
+
+      fetchSevaList();
+
+      handleClear();
+    } catch (error) {
+      console.error(error);
+      alert("Unable to save record.");
+    }
   };
 
   const closeSuccessModal = () => {
@@ -196,6 +207,7 @@ const SevaMaster = () => {
 
   useEffect(() => {
     fetchUtsavList();
+    fetchSevaList();
   }, []);
 
   const fetchUtsavList = async () => {
@@ -215,6 +227,34 @@ const SevaMaster = () => {
       setUtsavList(data);
     } catch (error) {
       console.error("Error:", error);
+    }
+  };
+
+  const fetchSevaList = async () => {
+    try {
+      const response = await fetch("----- Paste Your Link Here -----");
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch Seva List");
+      }
+
+      const data = await response.json();
+
+      console.log("Seva List:", data);
+
+      setSevaList(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (mode === "single") {
+        handleSave();
+      }
     }
   };
 
@@ -252,7 +292,11 @@ const SevaMaster = () => {
               Select Utsav <span>*</span>
             </label>
 
-            <select value={utsav} onChange={(e) => setUtsav(e.target.value)}>
+            <select
+              value={utsav}
+              onChange={(e) => setUtsav(e.target.value)}
+              onKeyDown={handleKeyDown}
+            >
               <option value="">Select Utsav</option>
 
               {utsavList.map((item) => (
@@ -273,6 +317,7 @@ const SevaMaster = () => {
               placeholder="Enter Seva Name"
               value={sevaName}
               onChange={(e) => setSevaName(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
 
@@ -286,6 +331,7 @@ const SevaMaster = () => {
               placeholder="Enter Requirement"
               value={requirement}
               onChange={(e) => setRequirement(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
 
@@ -307,7 +353,11 @@ const SevaMaster = () => {
               Select Utsav <span>*</span>
             </label>
 
-            <select value={utsav} onChange={(e) => setUtsav(e.target.value)}>
+            <select
+              value={utsav}
+              onChange={(e) => setUtsav(e.target.value)}
+              onKeyDown={handleKeyDown}
+            >
               <option value="">Select Utsav</option>
 
               {utsavList.map((item) => (
@@ -330,6 +380,7 @@ const SevaMaster = () => {
                 id="excelFile"
                 className="hidden-file-input"
                 onChange={(e) => setFile(e.target.files[0])}
+                onKeyDown={handleKeyDown}
               />
 
               <div
@@ -377,6 +428,7 @@ const SevaMaster = () => {
           placeholder="Search Seva Name..."
           value={searchSevaQuery}
           onChange={(e) => setSearchSevaQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       </div>
 
