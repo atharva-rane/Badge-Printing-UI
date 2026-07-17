@@ -11,7 +11,6 @@ const SevaMaster = () => {
 
   const [utsav, setUtsav] = useState("");
   const [sevaName, setSevaName] = useState("");
-  const [requirement, setRequirement] = useState("0");
   const fileInputRef = useRef(null);
 
   const [selectedId, setSelectedId] = useState(null);
@@ -37,18 +36,16 @@ const SevaMaster = () => {
   // Select Row
   // =====================
   const handleRowSelect = (item) => {
-    setSelectedId(item.id);
-    setSevaName(item.sevaName);
-    setRequirement(item.requirement);
-    setUtsav(item.utsavName);
+    setSelectedId(item.sevaID);
+    setSevaName(item.sevaName || "");
+    setUtsav(item.utsavName || "");
   };
-
   // =====================
   // Add
   // =====================
 
   const handleSave = async () => {
-    if (!utsav || !sevaName.trim() || !requirement) {
+    if (!utsav || !sevaName.trim()) {
       alert("Please fill all required fields.");
       return;
     }
@@ -59,14 +56,11 @@ const SevaMaster = () => {
 
       const payload = {
         utsavName: utsav,
-
         sevaName: sevaName.trim(),
-
-        requirement: Number(requirement),
       };
 
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/AddUtsav",
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/AddSeva",
         {
           method: "POST",
 
@@ -86,7 +80,7 @@ const SevaMaster = () => {
 
       setShowSuccessModal(true);
 
-      fetchSevaList();
+      await fetchSevaList();
 
       handleClear();
     } catch (error) {
@@ -112,16 +106,16 @@ const SevaMaster = () => {
       return;
     }
 
-    if (!utsav || !sevaName.trim() || !requirement) {
+    if (!utsav || !sevaName.trim()) {
       alert("Please fill all required fields.");
       return;
     }
 
     const duplicate = sevaList.some(
       (item) =>
-        item.id !== selectedId &&
+        item.sevaID !== selectedId &&
         item.sevaName.toLowerCase() === sevaName.trim().toLowerCase() &&
-        item.utsavName === utsav,
+        (item.utsavName || "") === utsav,
     );
 
     if (duplicate) {
@@ -139,16 +133,15 @@ const SevaMaster = () => {
       setLoading(true);
 
       const payload = {
-        id: selectedId,
+        sevaID: selectedId,
         utsavName: utsav,
         sevaName: sevaName.trim(),
-        requirement: Number(requirement),
       };
 
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UpdateUtsav",
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UpdateSeva",
         {
-          method: "PUT", // Change to POST if your API requires POST
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
@@ -198,13 +191,13 @@ const SevaMaster = () => {
       setLoading(true);
 
       const payload = {
-        id: selectedId,
+        sevaID: selectedId,
       };
 
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/DeleteUtsav",
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/DeleteSeva",
         {
-          method: "DELETE", // Change to POST if your API requires POST
+          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
           },
@@ -241,7 +234,6 @@ const SevaMaster = () => {
   const handleClear = () => {
     setSelectedId(null);
     setSevaName("");
-    setRequirement("");
     setUtsav("");
   };
 
@@ -250,16 +242,70 @@ const SevaMaster = () => {
   // =====================
   const filteredSevaList = useMemo(() => {
     return sevaList.filter((item) =>
-      item.sevaName.toLowerCase().includes(searchSevaQuery.toLowerCase()),
+      item.sevaName?.toLowerCase().includes(searchSevaQuery.toLowerCase()),
     );
   }, [sevaList, searchSevaQuery]);
 
   // =====================
   // BULK UPLOAD
   // =====================
-  const handleUpload = () => {
-    if (!file) return alert("Select file first");
-    alert("Bulk upload success (backend pending)");
+  const handleUpload = async () => {
+    if (!utsav) {
+      alert("Please select Utsav.");
+      return;
+    }
+
+    if (!file) {
+      alert("Please select Excel file.");
+      return;
+    }
+
+    try {
+      setLoaderText("Uploading Excel File...");
+      setLoading(true);
+
+      const formData = new FormData();
+
+      formData.append("file", file);
+      formData.append("utsavName", utsav);
+
+      const response = await fetch(
+        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UploadFile",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const result = await response.text();
+
+      console.log("Upload Response:", result);
+      console.log("Status:", response.status);
+
+      if (!response.ok) {
+        throw new Error(result || "Failed to upload file.");
+      }
+
+      setSuccessMessage("Excel uploaded successfully.");
+
+      setShowSuccessModal(true);
+
+      setFile(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+
+      setUtsav("");
+
+      fetchSevaList();
+    } catch (error) {
+      console.error("Upload Error:", error);
+
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // =====================
@@ -372,8 +418,11 @@ const SevaMaster = () => {
             >
               <option value="">Select Utsav</option>
 
-              {utsavList.map((item) => (
-                <option key={item.utsavID} value={item.utsavName}>
+              {utsavList.map((item, index) => (
+                <option
+                  key={item.utsavID || item.id || index}
+                  value={item.utsavName}
+                >
                   {item.utsavName}
                 </option>
               ))}
@@ -390,20 +439,6 @@ const SevaMaster = () => {
               placeholder="Enter Seva Name"
               value={sevaName}
               onChange={(e) => setSevaName(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
-
-          <div className="form-row">
-            <label>
-              Requirement <span>*</span>
-            </label>
-
-            <input
-              type="number"
-              placeholder="Enter Requirement"
-              value={requirement}
-              onChange={(e) => setRequirement(e.target.value)}
               onKeyDown={handleKeyDown}
             />
           </div>
@@ -433,8 +468,11 @@ const SevaMaster = () => {
             >
               <option value="">Select Utsav</option>
 
-              {utsavList.map((item) => (
-                <option key={item.utsavID} value={item.utsavName}>
+              {utsavList.map((item, index) => (
+                <option
+                  key={item.utsavID || item.id || index}
+                  value={item.utsavName}
+                >
                   {item.utsavName}
                 </option>
               ))}
@@ -510,10 +548,9 @@ const SevaMaster = () => {
         <table>
           <thead>
             <tr>
-              <th>ID</th>
+              <th>Seva ID</th>
               <th>Seva Code</th>
               <th>Seva Name</th>
-              <th>Requirement</th>
               <th>Utsav</th>
             </tr>
           </thead>
@@ -522,20 +559,19 @@ const SevaMaster = () => {
             {filteredSevaList.length > 0 ? (
               filteredSevaList.map((item) => (
                 <tr
-                  key={item.id}
-                  className={selectedId === item.id ? "active-row" : ""}
+                  key={item.sevaID}
+                  className={selectedId === item.sevaID ? "active-row" : ""}
                   onClick={() => handleRowSelect(item)}
                 >
-                  <td>{item.id}</td>
-                  <td>{item.sevaCode}</td>
+                  <td>{item.sevaID}</td>
+                  <td>{item.sevaID}</td>
                   <td>{item.sevaName}</td>
-                  <td>{item.requirement}</td>
-                  <td>{item.utsavName}</td>
+                  <td>{item.utsavName ? item.utsavName : "-"}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5" style={{ textAlign: "center" }}>
+                <td colSpan="4" style={{ textAlign: "center" }}>
                   No records found
                 </td>
               </tr>

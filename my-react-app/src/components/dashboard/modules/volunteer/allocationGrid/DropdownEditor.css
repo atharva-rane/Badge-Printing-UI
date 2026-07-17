@@ -1,0 +1,20 @@
+/* ==========================================================
+   DROPDOWN CELL EDITOR
+========================================================== */
+
+.allocation-dropdown-editor {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: 2px solid #0d6efd;
+  outline-offset: -2px;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 0 8px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.allocation-dropdown-editor:focus {
+  outline: 2px solid #0d6efd;
+}

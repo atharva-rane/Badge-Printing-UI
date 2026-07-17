@@ -1,0 +1,14 @@
+/* ==========================================================
+   CHECKBOX CELL RENDERER
+========================================================== */
+
+.allocation-checkbox-container {
+  cursor: pointer;
+}
+
+.allocation-checkbox {
+  width: 17px;
+  height: 17px;
+  accent-color: #0d6efd;
+  cursor: pointer;
+}

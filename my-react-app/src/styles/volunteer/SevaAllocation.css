@@ -1,0 +1,396 @@
+/* ==========================================================
+   SEVA ALLOCATION PAGE
+
+   NOTE: Styles for the toolbar, dropdown editor, and checkbox
+   renderer used to live only implicitly (no CSS existed for those
+   class names at all). They've been split into their own
+   component-scoped files so each piece can be styled/maintained
+   independently:
+     - AllocationToolbar.css
+     - DropdownEditor.css
+     - CheckboxRenderer.css
+   This file now only holds page-shell + grid-theme + status-bar +
+   loading-overlay styles.
+========================================================== */
+
+.sevaAllocation-master {
+  padding: 20px;
+  background: #f5f7fb;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.sevaAllocation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sevaAllocation-title h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  color: #222;
+}
+
+.sevaAllocation-title p {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ==========================================================
+   CARD
+========================================================== */
+
+.sevaAllocation-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* ==========================================================
+   AG GRID
+========================================================== */
+
+.sevaAllocation-grid {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  /* click-drag range selection reads as a text-drag gesture unless we
+     tell the browser not to try to select page text while dragging
+     across cells */
+  user-select: none;
+}
+
+/* ==========================================================
+   AG GRID THEME OVERRIDES
+========================================================== */
+
+.ag-theme-quartz {
+
+  --ag-font-family: Arial, Helvetica, sans-serif;
+
+  --ag-font-size: 14px;
+
+  --ag-row-height: 42px;
+
+  --ag-header-height: 45px;
+
+  --ag-border-color: #e3e6ea;
+
+  --ag-header-background-color: #0d6efd;
+
+  --ag-header-foreground-color: #ffffff;
+
+  --ag-selected-row-background-color: rgba(13,110,253,.10);
+
+  --ag-row-hover-color: rgba(13,110,253,.05);
+
+  /* Excel-style zebra striping: odd rows get a light grey, even rows
+     stay white (--ag-background-color below). */
+  --ag-odd-row-background-color: #f3f5f8;
+
+  --ag-background-color: #ffffff;
+
+  --ag-input-focus-border-color: #0d6efd;
+}
+
+.ag-theme-quartz .ag-root-wrapper {
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+}
+
+.ag-theme-quartz .ag-header-cell {
+  font-weight: 600;
+}
+
+.ag-theme-quartz .ag-cell {
+  display: flex;
+  align-items: center;
+}
+
+.ag-theme-quartz .ag-row {
+  transition: background 0.2s ease;
+}
+
+.ag-theme-quartz .ag-row:hover {
+  background: #eef5ff;
+}
+
+.ag-theme-quartz .ag-cell-focus {
+  border: 1px solid #0d6efd !important;
+}
+
+.ag-theme-quartz .ag-paging-panel {
+  border-top: 1px solid #e5e5e5;
+  padding: 8px 12px;
+}
+
+.ag-theme-quartz .ag-floating-filter-input input,
+.ag-theme-quartz .ag-text-field-input,
+.ag-theme-quartz .ag-input-field-input,
+.ag-theme-quartz .ag-floating-filter-body input,
+.ag-theme-quartz .ag-header input {
+  border-radius: 4px;
+  /* The floating filter row sits inside the header section, which
+     sets foreground/text color to white (--ag-header-foreground-color)
+     for the blue header background. That was leaking into these
+     inputs too, making typed text invisible on their white input
+     background - override it explicitly. Several selectors are
+     targeted here because the exact class name for this input
+     differs slightly between ag-grid versions. */
+  color: #0d3b66 !important;
+  -webkit-text-fill-color: #0d3b66 !important;
+  background-color: #ffffff !important;
+  caret-color: #0d3b66 !important;
+}
+
+.ag-theme-quartz .ag-floating-filter-input input::placeholder,
+.ag-theme-quartz .ag-header input::placeholder {
+  color: #6c86a8 !important;
+  opacity: 1 !important;
+}
+
+/* ==========================================================
+   ROW-SELECTION CHECKBOX COLUMN
+========================================================== */
+
+.ag-theme-quartz .selection-checkbox-cell,
+.ag-theme-quartz .selection-checkbox-header {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.ag-theme-quartz .selection-checkbox-cell input[type="checkbox"],
+.ag-theme-quartz .selection-checkbox-header input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.ag-theme-quartz .selection-checkbox-cell input[type="checkbox"] {
+  accent-color: #0d6efd; /* row is white/grey, so use the brand blue */
+}
+
+.ag-theme-quartz .selection-checkbox-header input[type="checkbox"] {
+  accent-color: #ffffff; /* header is blue, so use white for contrast */
+}
+
+/* ==========================================================
+   EXCEL-STYLE RANGE SELECTION
+   (applied via cellClassRules from useExcelRangeSelection.js)
+========================================================== */
+
+.ag-theme-quartz .ag-cell.excel-cell-selected {
+  background-color: rgba(13, 110, 253, 0.16) !important;
+  outline: 1px solid rgba(13, 110, 253, 0.55);
+  outline-offset: -1px;
+}
+
+/* ==========================================================
+   STATUS BAR
+========================================================== */
+
+.sevaAllocation-status {
+  margin-top: 18px;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 14px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.sevaAllocation-status div {
+  font-size: 14px;
+  color: #444;
+}
+
+.sevaAllocation-hint {
+  font-size: 12.5px !important;
+  color: #888 !important;
+  font-style: italic;
+}
+
+.status-saved {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-unsaved {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* ==========================================================
+   LOADING OVERLAY
+========================================================== */
+
+.sevaAllocation-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,.75);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.sevaAllocation-loader-card {
+  width: 220px;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 5px 25px rgba(0,0,0,.15);
+}
+
+.sevaAllocation-loader-card p {
+  margin-top: 15px;
+  font-size: 15px;
+  color: #555;
+}
+
+/* ==========================================================
+   LOADER
+========================================================== */
+
+.loader {
+  width: 46px;
+  height: 46px;
+  border: 4px solid #d9d9d9;
+  border-top: 4px solid #0d6efd;
+  border-radius: 50%;
+  margin: auto;
+  animation: sevaAllocationSpin .8s linear infinite;
+}
+
+@keyframes sevaAllocationSpin {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+/* ==========================================================
+   SCROLLBAR
+========================================================== */
+
+.sevaAllocation-grid::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.sevaAllocation-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.sevaAllocation-grid::-webkit-scrollbar-thumb {
+  background: #b8b8b8;
+  border-radius: 20px;
+}
+
+.sevaAllocation-grid::-webkit-scrollbar-thumb:hover {
+  background: #8d8d8d;
+}
+
+/* ==========================================================
+   RESPONSIVE - LARGE
+========================================================== */
+
+@media (max-width:1200px){
+
+  .sevaAllocation-status{
+    justify-content:center;
+  }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - TABLET
+========================================================== */
+
+@media (max-width:768px){
+
+  .sevaAllocation-master{
+    padding:15px;
+  }
+
+  .sevaAllocation-header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .sevaAllocation-title h2{
+    font-size:22px;
+  }
+
+  .sevaAllocation-card{
+    padding:12px;
+  }
+
+  .sevaAllocation-grid{
+    height:65vh !important;
+  }
+
+  .sevaAllocation-status{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+}
+
+/* ==========================================================
+   RESPONSIVE - MOBILE
+========================================================== */
+
+@media (max-width:480px){
+
+  .sevaAllocation-master{
+    padding:12px;
+  }
+
+  .sevaAllocation-title h2{
+    font-size:20px;
+  }
+
+  .sevaAllocation-title p{
+    font-size:13px;
+  }
+
+  .sevaAllocation-card{
+    padding:10px;
+  }
+
+  .sevaAllocation-grid{
+    height:60vh !important;
+  }
+
+  .sevaAllocation-status{
+    padding:12px;
+  }
+
+  .sevaAllocation-status div{
+    width:100%;
+  }
+
+}
