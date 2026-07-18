@@ -100,7 +100,14 @@
 
   --ag-background-color: #ffffff;
 
-  --ag-input-focus-border-color: #0d6efd;
+--ag-input-focus-border-color: #0d6efd;
+
+  /* Excel-style gridlines. The theme's default only draws the
+     horizontal (row) border - --ag-cell-horizontal-border is what
+     adds the vertical line between columns. Kept light grey, 1px,
+     so it reads as a mild gridline rather than a heavy table border. */
+  --ag-row-border-color: #dde1e6;
+  --ag-cell-horizontal-border: 1px solid #dde1e6;
 }
 
 .ag-theme-quartz .ag-root-wrapper {
@@ -110,11 +117,40 @@
 
 .ag-theme-quartz .ag-header-cell {
   font-weight: 600;
+  /* Header has its own vertical dividers - background is blue there,
+     so use a light translucent white line instead of the grey one
+     used in the body, or it'd be invisible against blue. */
+  border-right: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .ag-theme-quartz .ag-cell {
   display: flex;
   align-items: center;
+  /* Belt-and-suspenders: some ag-grid versions don't fully honor
+     --ag-cell-horizontal-border on the rightmost/pinned cells, so
+     draw the vertical gridline explicitly here too. */
+  border-right: 1px solid #e3e6ea;
+}
+
+.ag-theme-quartz .ag-header-cell .ag-header-cell-label {
+  justify-content: center;
+}
+
+.ag-theme-quartz .ag-cell {
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #e3e6ea;
+  /* Center text horizontally in every column by default */
+  justify-content: center;
+  text-align: center;
+}
+
+/* Volunteer Name and Seva Name stay left-aligned, like normal text
+   columns, since centering long free-text values looks awkward */
+.ag-theme-quartz .ag-cell[col-id="volName"],
+.ag-theme-quartz .ag-cell[col-id="sevaName"] {
+  justify-content: flex-start;
+  text-align: left;
 }
 
 .ag-theme-quartz .ag-row {

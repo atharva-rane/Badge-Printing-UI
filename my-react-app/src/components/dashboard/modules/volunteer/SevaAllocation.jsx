@@ -22,9 +22,11 @@ import {
   QuickFilterModule,
   TextEditorModule,
   CheckboxEditorModule,
-  CustomEditorModule,
-  UndoRedoEditModule, // needed for undoRedoCellEditing
-  ColumnAutoSizeModule, // needed for sizeColumnsToFit / autoSizeColumns
+  SelectEditorModule,
+  UndoRedoEditModule,
+  ColumnAutoSizeModule,
+  CellStyleModule,
+  NumberEditorModule,
 } from "ag-grid-community";
 
 import "ag-grid-community/styles/ag-grid.css";
@@ -33,7 +35,6 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "../../../../styles/volunteer/SevaAllocation.css";
 
 import AllocationToolbar from "../volunteer/allocationGrid/AllocationToolbar";
-import DropdownEditor from "../volunteer/allocationGrid/DropdownEditor";
 import useExcelRangeSelection from "../volunteer/allocationGrid/useExcelRangeSelection";
 import {
   KENDRA_LIST as MOCK_KENDRA_LIST,
@@ -60,12 +61,14 @@ ModuleRegistry.registerModules([
   PaginationModule,
   RowSelectionModule,
   QuickFilterModule,
-  TextEditorModule, // needed for default editable text cells
-  CheckboxEditorModule, // needed for agCheckboxCellEditor
-  CustomEditorModule, // needed for the custom DropdownEditor
-  UndoRedoEditModule, // needed for undoRedoCellEditing
-  ColumnAutoSizeModule, // needed for sizeColumnsToFit / autoSizeColumns
-  ValidationModule, // dev-only: keep out of prod bundle if bundle size matters
+  TextEditorModule,
+  CheckboxEditorModule,
+  SelectEditorModule,
+  UndoRedoEditModule,
+  ColumnAutoSizeModule,
+  CellStyleModule, // needed for cellClass / cellClassRules
+  NumberEditorModule, // needed for the Age column's numeric editor
+  ValidationModule,
 ]);
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -137,7 +140,7 @@ const yesNoColumn = (field) => ({
     params.data[field] = params.newValue === "Yes";
     return true;
   },
-  cellEditor: DropdownEditor,
+  cellEditor: "agSelectCellEditor",
   cellEditorParams: { values: YES_NO_VALUES },
 });
 
@@ -580,7 +583,19 @@ const SevaAllocation = () => {
       filter: true,
       floatingFilter: true,
       resizable: true,
-      singleClickEdit: true,
+      // Excel-style: a single click SELECTS a cell (or starts a
+      // click-drag range selection via useExcelRangeSelection). It
+      // does NOT open the editor. Double-click, F2, or Alt+ArrowDown
+      // start editing instead (see useExcelRangeSelection.js).
+      //
+      // This was previously `true`, which opened the cell editor on
+      // every single click. That put the grid into "editing" state
+      // immediately on click, and useExcelRangeSelection's keyboard
+      // handler deliberately backs off while editing (so it doesn't
+      // hijack normal typing) - so Ctrl+C / Ctrl+V / Ctrl+D etc. never
+      // reached the range-selection logic at all. This was the actual
+      // cause of "shortcuts don't work."
+      singleClickEdit: false,
       minWidth: 150,
       // Highlights every cell that falls inside the current
       // click-and-drag Excel-style selection - see
@@ -624,11 +639,14 @@ const SevaAllocation = () => {
         headerName: "Kendra Name",
         field: "kendraName",
         editable: true,
-        cellEditor: DropdownEditor,
+        cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: (Array.isArray(kendraList) ? kendraList : []).map(
-            (x) => x.kendraName,
-          ),
+          values: [
+            "",
+            ...(Array.isArray(kendraList) ? kendraList : []).map(
+              (x) => x.kendraName,
+            ),
+          ],
         },
         pinned: "left",
         width: 180,
@@ -638,11 +656,12 @@ const SevaAllocation = () => {
         headerName: "Seva Name",
         field: "sevaName",
         editable: true,
-        cellEditor: DropdownEditor,
+        cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: (Array.isArray(sevaList) ? sevaList : []).map(
-            (x) => x.sevaName,
-          ),
+          values: [
+            "",
+            ...(Array.isArray(sevaList) ? sevaList : []).map((x) => x.sevaName),
+          ],
         },
         width: 220,
       },
@@ -651,11 +670,14 @@ const SevaAllocation = () => {
         headerName: "Shift",
         field: "shift",
         editable: true,
-        cellEditor: DropdownEditor,
+        cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: (Array.isArray(shiftList) ? shiftList : []).map(
-            (x) => x.shiftName,
-          ),
+          values: [
+            "",
+            ...(Array.isArray(shiftList) ? shiftList : []).map(
+              (x) => x.shiftName,
+            ),
+          ],
         },
         width: 120,
       },
@@ -1011,8 +1033,9 @@ const SevaAllocation = () => {
         </div>
 
         <div className="sevaAllocation-hint">
-          Tip: click-drag to select a range, then Ctrl+C / Ctrl+V to copy-paste
-          like Excel, or Ctrl+D to fill down.
+          Tip: click a cell (or drag) to select, double-click or F2 to edit.
+          Ctrl+C / Ctrl+V to copy-paste like Excel, Ctrl+Z / Ctrl+Y to undo /
+          redo, Ctrl+D to fill down.
         </div>
       </div>
 

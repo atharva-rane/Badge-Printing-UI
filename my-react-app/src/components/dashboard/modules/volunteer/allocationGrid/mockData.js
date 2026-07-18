@@ -23,12 +23,12 @@
 // =====================================================================
 
 export const KENDRA_LIST = [
-  { kendraName: "Andheri Kendra" },
-  { kendraName: "Borivali Kendra" },
-  { kendraName: "Dadar Kendra" },
-  { kendraName: "Ghatkopar Kendra" },
-  { kendraName: "Thane Kendra" },
-  { kendraName: "Vashi Kendra" },
+  { kendraName: "Andheri" },
+  { kendraName: "Borivali" },
+  { kendraName: "Dadar" },
+  { kendraName: "Ghatkopar" },
+  { kendraName: "Thane" },
+  { kendraName: "Vashi" },
 ];
 
 export const SEVA_LIST = [
@@ -69,14 +69,44 @@ const OCCUPATIONS = [
 ];
 
 const FIRST_NAMES = [
-  "Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Krishna", "Ishaan",
-  "Rohan", "Kabir", "Ananya", "Diya", "Isha", "Riya", "Saanvi", "Meera",
-  "Priya", "Neha", "Pooja", "Kavya",
+  "Aarav",
+  "Vivaan",
+  "Aditya",
+  "Vihaan",
+  "Arjun",
+  "Sai",
+  "Krishna",
+  "Ishaan",
+  "Rohan",
+  "Kabir",
+  "Ananya",
+  "Diya",
+  "Isha",
+  "Riya",
+  "Saanvi",
+  "Meera",
+  "Priya",
+  "Neha",
+  "Pooja",
+  "Kavya",
 ];
 
 const LAST_NAMES = [
-  "Sharma", "Verma", "Patel", "Shah", "Mehta", "Gupta", "Iyer", "Nair",
-  "Reddy", "Joshi", "Desai", "Kulkarni", "Rao", "Pillai", "Chopra",
+  "Sharma",
+  "Verma",
+  "Patel",
+  "Shah",
+  "Mehta",
+  "Gupta",
+  "Iyer",
+  "Nair",
+  "Reddy",
+  "Joshi",
+  "Desai",
+  "Kulkarni",
+  "Rao",
+  "Pillai",
+  "Chopra",
 ];
 
 // ---------------------------------------------------------------------
@@ -130,7 +160,8 @@ export function generateMockAllocationData(count = 5000) {
   for (let i = 0; i < count; i++) {
     const first = FIRST_NAMES[i % FIRST_NAMES.length];
     const last = LAST_NAMES[(i * 7 + 3) % LAST_NAMES.length];
-    const volName = `${first} ${last} ${Math.floor(i / FIRST_NAMES.length) || ""}`.trim();
+    const volName =
+      `${first} ${last} ${Math.floor(i / FIRST_NAMES.length) || ""}`.trim();
 
     rows[i] = {
       id: i + 1,
