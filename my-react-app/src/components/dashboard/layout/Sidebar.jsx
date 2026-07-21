@@ -283,8 +283,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, sidebarRef }) => {
           onMouseMove={(e) => handleMouseMove(e, "Logout")}
           onMouseLeave={hideTooltip}
         >
-          <FiLogOut />
-          {sidebarOpen && "Logout"}
+          <FiLogOut className="menu-icon logout-icon" />
+          {sidebarOpen && <span>Logout</span>}
         </button>
       </div>
 

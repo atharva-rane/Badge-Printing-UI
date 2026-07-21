@@ -1,5 +1,11 @@
 import { useState, useMemo } from "react";
 import "../../../../styles/masters/ShiftMaster.css";
+import AppButton from "../../../common/AppButton";
+import SearchBar from "../../../common/SearchBar";
+import ConfirmModal from "../../../common/ConfirmModal";
+import ResultModal, { buildResultMessage } from "../../../common/ResultModal";
+
+const ENTITY = "Shift";
 
 const ShiftMaster = () => {
   // ==========================================
@@ -91,7 +97,7 @@ const ShiftMaster = () => {
 
     setShiftList((prev) => [...prev, newShift]);
 
-    setSuccessMessage("Saved successfully.");
+    setSuccessMessage(buildResultMessage(ENTITY, "saved", newShift.shiftName));
 
     setShowSuccessModal(true);
 
@@ -171,11 +177,13 @@ const ShiftMaster = () => {
   };
 
   const confirmUpdate = () => {
+    const updatedName = shiftName.trim();
+
     const updatedList = shiftList.map((item) =>
       item.id === selectedId
         ? {
             ...item,
-            shiftName: shiftName.trim(),
+            shiftName: updatedName,
             timeStamp: new Date().toLocaleString("en-GB"),
           }
         : item,
@@ -185,7 +193,7 @@ const ShiftMaster = () => {
 
     setShowUpdateModal(false);
 
-    setSuccessMessage("Updated successfully.");
+    setSuccessMessage(buildResultMessage(ENTITY, "updated", updatedName));
 
     setShowSuccessModal(true);
 
@@ -210,11 +218,13 @@ const ShiftMaster = () => {
   };
 
   const confirmDelete = () => {
+    const deletedName = shiftName;
+
     setShiftList((prev) => prev.filter((item) => item.id !== selectedId));
 
     setShowDeleteModal(false);
 
-    setSuccessMessage("Deleted successfully.");
+    setSuccessMessage(buildResultMessage(ENTITY, "deleted", deletedName));
 
     setShowSuccessModal(true);
 
@@ -264,24 +274,21 @@ const ShiftMaster = () => {
           />
         </div>
 
-        {/* Buttons */}
+        {/* Buttons - shared AppButton component */}
 
         <div className="shiftMaster-button-group">
-          <button className="shiftMaster-save-btn" onClick={handleSave}>
+          <AppButton variant="save" onClick={handleSave}>
             Save
-          </button>
-
-          <button className="shiftMaster-update-btn" onClick={handleUpdate}>
+          </AppButton>
+          <AppButton variant="update" onClick={handleUpdate}>
             Update
-          </button>
-
-          <button className="shiftMaster-delete-btn" onClick={handleDelete}>
+          </AppButton>
+          <AppButton variant="delete" onClick={handleDelete}>
             Delete
-          </button>
-
-          <button className="shiftMaster-clear-btn" onClick={handleClear}>
+          </AppButton>
+          <AppButton variant="clear" onClick={handleClear}>
             Clear
-          </button>
+          </AppButton>
         </div>
       </div>
 
@@ -289,20 +296,13 @@ const ShiftMaster = () => {
       Search Card
 ================================ */}
 
-      {/* Search */}
-
       <div className="shiftMaster-search-card">
-        <div className="shiftMaster-search-container">
-          <label className="shiftMaster-search-label">Search Shift</label>
-
-          <input
-            type="text"
-            className="shiftMaster-search-input"
-            placeholder="Search Shift..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
-        </div>
+        <SearchBar
+          label="Search Shift"
+          placeholder="Search Shift..."
+          value={searchText}
+          onChange={setSearchText}
+        />
       </div>
 
       {/* ===============================
@@ -310,8 +310,8 @@ const ShiftMaster = () => {
       =============================== */}
 
       <div className="shiftMaster-card">
-        <div className="shiftMaster-table-responsive">
-          <table className="shiftMaster-table">
+        <div className="shiftMaster-table-responsive app-table-container">
+          <table className="shiftMaster-table app-table">
             <thead>
               <tr>
                 <th width="80">Sr.</th>
@@ -348,88 +348,32 @@ const ShiftMaster = () => {
           </table>
         </div>
 
-        {/* ===============================
-              Success Popup
-        =============================== */}
+        {/* Success Popup - entity-aware, shared component */}
+        <ResultModal
+          open={showSuccessModal}
+          message={successMessage}
+          onClose={closeSuccessModal}
+        />
 
-        {showSuccessModal && (
-          <div className="utsavMaster-success-overlay">
-            <div className="utsavMaster-success-modal">
-              <h4>Success</h4>
+        {/* Update Confirmation - entity-aware, shared component */}
+        <ConfirmModal
+          open={showUpdateModal}
+          action="update"
+          entity={ENTITY}
+          recordName={shiftName}
+          onConfirm={confirmUpdate}
+          onCancel={cancelUpdate}
+        />
 
-              <p>{successMessage}</p>
-
-              <div className="utsavMaster-success-buttons">
-                <button
-                  className="utsavMaster-success-btn"
-                  onClick={closeSuccessModal}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===============================
-              Update Confirmation Popup
-        =============================== */}
-
-        {showUpdateModal && (
-          <div className="utsavMaster-update-overlay">
-            <div className="utsavMaster-update-modal">
-              <h4>Update Confirmation</h4>
-
-              <p>Are you sure you want to update this Shift?</p>
-
-              <div className="utsavMaster-update-buttons">
-                <button
-                  className="utsavMaster-update-cancel-btn"
-                  onClick={cancelUpdate}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  className="utsavMaster-update-confirm-btn"
-                  onClick={confirmUpdate}
-                >
-                  Update
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===============================
-              Delete Confirmation Popup
-        =============================== */}
-
-        {showDeleteModal && (
-          <div className="utsavMaster-delete-overlay">
-            <div className="utsavMaster-delete-modal">
-              <h4>Delete Confirmation</h4>
-
-              <p>Are you sure you want to delete this Shift?</p>
-
-              <div className="utsavMaster-delete-buttons">
-                <button
-                  className="utsavMaster-delete-cancel-btn"
-                  onClick={cancelDelete}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  className="utsavMaster-delete-confirm-btn"
-                  onClick={confirmDelete}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Delete Confirmation - entity-aware, shared component */}
+        <ConfirmModal
+          open={showDeleteModal}
+          action="delete"
+          entity={ENTITY}
+          recordName={shiftName}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
       </div>
     </div>
   );

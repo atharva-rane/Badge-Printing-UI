@@ -1,4 +1,4 @@
-import React, {
+import {
   useState,
   useEffect,
   useMemo,
@@ -17,16 +17,10 @@ import {
   NumberFilterModule,
   DateFilterModule,
   ValidationModule,
-  PaginationModule,
   RowSelectionModule,
   QuickFilterModule,
-  TextEditorModule,
-  CheckboxEditorModule,
-  SelectEditorModule,
-  UndoRedoEditModule,
   ColumnAutoSizeModule,
   CellStyleModule,
-  NumberEditorModule,
 } from "ag-grid-community";
 
 import "ag-grid-community/styles/ag-grid.css";
@@ -35,7 +29,12 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import "../../../../styles/volunteer/SevaAllocation.css";
 
 import AllocationToolbar from "../volunteer/allocationGrid/AllocationToolbar";
-import useExcelRangeSelection from "../volunteer/allocationGrid/useExcelRangeSelection";
+import ActionsCellRenderer from "../volunteer/allocationGrid/ActionsCellRenderer";
+import QRCellRenderer from "../volunteer/allocationGrid/QRCellRenderer";
+import VolunteerFormModal from "../volunteer/allocationGrid/VolunteerFormModal";
+import QRDetailsModal from "../volunteer/allocationGrid/QRDetailsModal";
+import ConfirmModal from "../../../common/ConfirmModal";
+import ResultModal, { buildResultMessage } from "../../../common/ResultModal";
 import {
   KENDRA_LIST as MOCK_KENDRA_LIST,
   SEVA_LIST as MOCK_SEVA_LIST,
@@ -50,7 +49,7 @@ import { importExcelFile } from "../../../../utils/importExcel";
 // -----------------------------------------
 // Register every module the grid actually uses.
 // Missing a module here doesn't crash the app - it just makes that
-// one feature (pagination, selection, quick filter, editing...)
+// one feature (selection, quick filter, sorting/filtering...)
 // silently stop working.
 // -----------------------------------------
 ModuleRegistry.registerModules([
@@ -58,20 +57,16 @@ ModuleRegistry.registerModules([
   TextFilterModule,
   NumberFilterModule,
   DateFilterModule,
-  PaginationModule,
   RowSelectionModule,
   QuickFilterModule,
-  TextEditorModule,
-  CheckboxEditorModule,
-  SelectEditorModule,
-  UndoRedoEditModule,
   ColumnAutoSizeModule,
-  CellStyleModule, // needed for cellClass / cellClassRules
-  NumberEditorModule, // needed for the Age column's numeric editor
+  CellStyleModule,
   ValidationModule,
 ]);
 
 const API_URL = import.meta.env.VITE_API_URL;
+
+const ENTITY = "Volunteer";
 
 // -----------------------------------------
 // MOCK DATA SWITCH
@@ -88,8 +83,9 @@ const USE_MOCK_DATA = true;
 const MOCK_RECORD_COUNT = 10;
 
 // -----------------------------------------
-// Blank row template for "Add Row".
-// Keep this in sync with columnDefs fields below.
+// Blank row template for "Add Volunteer".
+// Keep this in sync with columnDefs fields below and with
+// VolunteerFormModal's own emptyForm.
 // -----------------------------------------
 const BLANK_ROW = {
   kendraName: "",
@@ -110,6 +106,11 @@ const BLANK_ROW = {
   utsavCoordinator: false,
 };
 
+// Fields that must be filled in for a volunteer row to be considered
+// "complete". Rows missing any of these get a red highlight (see
+// rowClassRules below) so incomplete data stands out visually.
+const REQUIRED_FIELDS = ["kendraName", "sevaName", "shift", "volName", "mobileNo"];
+
 // A client-side-only id generator, used for rows that don't have a
 // backend-assigned id yet (freshly added rows, or rows whose API
 // response didn't include one). Never sent to the server.
@@ -123,25 +124,11 @@ const generateTempId = () =>
 const getBackendId = (row) => row?.id ?? row?.allocationId ?? null;
 
 // -----------------------------------------
-// Yes/No column helper
+// Yes/No column helper (display only - editing now happens through
+// the Add/Edit Volunteer form, not in the grid cell).
 // -----------------------------------------
-// Boolean fields (comingThursdaySeva, thursdayCoordinator,
-// utsavCoordinator) display and edit as "Yes"/"No" instead of a
-// checkbox. valueGetter/valueSetter do the boolean <-> text
-// conversion so the underlying data stays a real boolean (important
-// if the backend expects true/false rather than the strings). No
-// custom cellRenderer here on purpose - it renders as plain text via
-// ag-grid's default renderer, same as every other column.
-const YES_NO_VALUES = ["Yes", "No"];
-
 const yesNoColumn = (field) => ({
   valueGetter: (params) => (params.data?.[field] ? "Yes" : "No"),
-  valueSetter: (params) => {
-    params.data[field] = params.newValue === "Yes";
-    return true;
-  },
-  cellEditor: "agSelectCellEditor",
-  cellEditorParams: { values: YES_NO_VALUES },
 });
 
 const SevaAllocation = () => {
@@ -165,17 +152,30 @@ const SevaAllocation = () => {
 
   const [gridApi, setGridApi] = useState(null);
 
-  // NOTE: columnApi is gone as of AG Grid v31+ - all column operations
-  // (autoSizeColumns, getColumns, etc.) now live on the regular grid `api`.
-  // A separate columnApi state is no longer needed.
+  // -----------------------------------------
+  // Add / Edit Volunteer modal
+  // -----------------------------------------
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [formMode, setFormMode] = useState("add"); // "add" | "edit"
+  const [editingRow, setEditingRow] = useState(null);
 
   // -----------------------------------------
-  // Excel-like range select / copy / paste / fill-down.
-  // See useExcelRangeSelection.js for the full behaviour breakdown.
+  // Delete confirmation (single row, via the row's delete icon)
   // -----------------------------------------
-  const excel = useExcelRangeSelection({
-    onRangeChanged: () => setUnsavedChanges(true),
-  });
+  const [rowPendingDelete, setRowPendingDelete] = useState(null);
+  const [showDeleteRowModal, setShowDeleteRowModal] = useState(false);
+
+  // -----------------------------------------
+  // Save / update / delete success popup
+  // -----------------------------------------
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // -----------------------------------------
+  // QR details popup
+  // -----------------------------------------
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrRow, setQrRow] = useState(null);
 
   // -----------------------------------------
   // Warn before leaving the tab with unsaved edits
@@ -277,9 +277,9 @@ const SevaAllocation = () => {
       }
 
       // Give every row a stable client-side identity (_rowId) so ag-grid
-      // can track selection/edits correctly across re-renders, even if
-      // the backend row doesn't include an id, or the id field name
-      // varies. This never gets sent back to the server (stripped in
+      // can track selection correctly across re-renders, even if the
+      // backend row doesn't include an id, or the id field name varies.
+      // This never gets sent back to the server (stripped in
       // saveAllocation).
       const normalized = data.map((row) => ({
         _rowId: getBackendId(row) ?? generateTempId(),
@@ -306,9 +306,6 @@ const SevaAllocation = () => {
 
   const onGridReady = (params) => {
     setGridApi(params.api);
-    excel.setGridApi(params.api);
-
-    params.api.sizeColumnsToFit();
   };
 
   // -----------------------------------------
@@ -328,14 +325,6 @@ const SevaAllocation = () => {
   }, [searchText, gridApi]);
 
   // -----------------------------------------
-  // Cell Changed
-  // -----------------------------------------
-
-  const onCellValueChanged = useCallback(() => {
-    setUnsavedChanges(true);
-  }, []);
-
-  // -----------------------------------------
   // Selection Changed
   // -----------------------------------------
 
@@ -346,21 +335,104 @@ const SevaAllocation = () => {
   }, [gridApi]);
 
   // -----------------------------------------
-  // Add Row
+  // Add / Edit Volunteer (opens the shared form modal instead of
+  // editing grid cells directly)
   // -----------------------------------------
 
-  const addNewRow = useCallback(() => {
-    const newRow = {
-      _rowId: generateTempId(),
-      ...BLANK_ROW,
-    };
-
-    setRowData((prev) => [newRow, ...prev]);
-    setUnsavedChanges(true);
+  const openAddForm = useCallback(() => {
+    setFormMode("add");
+    setEditingRow(null);
+    setFormModalOpen(true);
   }, []);
 
+  const openEditForm = useCallback((row) => {
+    setFormMode("edit");
+    setEditingRow(row);
+    setFormModalOpen(true);
+  }, []);
+
+  const closeForm = () => {
+    setFormModalOpen(false);
+    setEditingRow(null);
+  };
+
+  const closeSuccessModal = () => setShowSuccessModal(false);
+
+  const handleFormSave = (formValues) => {
+    if (formMode === "edit" && editingRow) {
+      setRowData((prev) =>
+        prev.map((r) =>
+          r._rowId === editingRow._rowId ? { ...r, ...formValues } : r,
+        ),
+      );
+
+      setSuccessMessage(buildResultMessage(ENTITY, "updated", formValues.volName));
+    } else {
+      const newRow = {
+        _rowId: generateTempId(),
+        ...BLANK_ROW,
+        ...formValues,
+      };
+
+      setRowData((prev) => [newRow, ...prev]);
+
+      setSuccessMessage(buildResultMessage(ENTITY, "saved", formValues.volName));
+    }
+
+    setUnsavedChanges(true);
+    setShowSuccessModal(true);
+    closeForm();
+  };
+
   // -----------------------------------------
-  // Delete Selected Rows
+  // Delete a single row (via its row-level delete icon)
+  // -----------------------------------------
+
+  const requestDeleteRow = useCallback((row) => {
+    setRowPendingDelete(row);
+    setShowDeleteRowModal(true);
+  }, []);
+
+  const cancelDeleteRow = () => {
+    setShowDeleteRowModal(false);
+    setRowPendingDelete(null);
+  };
+
+  const confirmDeleteRow = async () => {
+    if (!rowPendingDelete) return;
+
+    const deletedName = rowPendingDelete.volName;
+    const backendId = getBackendId(rowPendingDelete);
+
+    try {
+      setLoading(true);
+
+      if (!USE_MOCK_DATA && backendId !== null) {
+        // TODO: confirm the real delete endpoint + request shape with
+        // the backend. Common shapes: POST with { ids: [...] }, or
+        // DELETE with an id in the query string / body.
+        await axios.post(`${API_URL}/DeleteAllocation`, { ids: [backendId] });
+      }
+
+      setRowData((prev) =>
+        prev.filter((r) => r._rowId !== rowPendingDelete._rowId),
+      );
+
+      setShowDeleteRowModal(false);
+      setRowPendingDelete(null);
+
+      setSuccessMessage(buildResultMessage(ENTITY, "deleted", deletedName));
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.log(err);
+      alert("Failed to delete this volunteer. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // -----------------------------------------
+  // Delete Selected Rows (bulk, via toolbar / checkbox selection)
   // -----------------------------------------
 
   const deleteSelectedRows = useCallback(async () => {
@@ -409,6 +481,20 @@ const SevaAllocation = () => {
   }, [gridApi]);
 
   // -----------------------------------------
+  // QR Details Popup
+  // -----------------------------------------
+
+  const openQrModal = useCallback((row) => {
+    setQrRow(row);
+    setQrModalOpen(true);
+  }, []);
+
+  const closeQrModal = () => {
+    setQrModalOpen(false);
+    setQrRow(null);
+  };
+
+  // -----------------------------------------
   // Save Allocation
   // -----------------------------------------
 
@@ -431,9 +517,7 @@ const SevaAllocation = () => {
       const payload = rowData.map(({ _rowId, ...rest }) => rest);
 
       // TODO: confirm whether the backend wants the full row list on
-      // every save (current behavior) or only changed rows. If only
-      // changed rows, track dirty row ids in onCellValueChanged and
-      // filter payload down to those before posting.
+      // every save (current behavior) or only changed rows.
       await axios.post(`${API_URL}/SaveAllocation`, payload);
 
       setUnsavedChanges(false);
@@ -450,9 +534,6 @@ const SevaAllocation = () => {
   // -----------------------------------------
   // Ctrl/Cmd + S -> Save
   // -----------------------------------------
-  // Kept as a ref so the listener can be attached once on mount
-  // instead of being torn down/re-added on every render (saveAllocation
-  // isn't wrapped in useCallback, so its reference changes each render).
   const saveAllocationRef = useRef(saveAllocation);
   saveAllocationRef.current = saveAllocation;
 
@@ -469,41 +550,6 @@ const SevaAllocation = () => {
     window.addEventListener("keydown", handleSaveShortcut);
     return () => window.removeEventListener("keydown", handleSaveShortcut);
   }, []);
-
-  // -----------------------------------------
-  // Delete key -> delete selected row(s)
-  // -----------------------------------------
-  // Mirrors the toolbar's Delete button (same confirm dialog, same
-  // deleteSelectedRows call) but triggered by pressing the keyboard
-  // Delete key once one or more rows are checkbox-selected.
-  //
-  // This is intentionally attached in the CAPTURE phase so it runs
-  // before useExcelRangeSelection's own Delete-key handler (which
-  // clears the contents of a selected *cell range* - a different
-  // feature). Capture-phase listeners always run before bubble-phase
-  // ones for the same event, so when a whole row is selected, this
-  // wins and stops the event from reaching that other handler.
-  useEffect(() => {
-    const handleDeleteRowShortcut = (e) => {
-      if (e.key !== "Delete") return;
-      if (!gridApi) return;
-
-      // Don't hijack Delete while the user is actively typing/editing
-      // inside a cell - let normal in-cell editing behaviour handle it.
-      if (gridApi.getEditingCells().length > 0) return;
-
-      const selected = gridApi.getSelectedRows();
-      if (selected.length === 0) return; // nothing row-selected: leave the key alone
-
-      e.preventDefault();
-      e.stopPropagation();
-      deleteSelectedRows(); // already shows a confirm dialog before deleting
-    };
-
-    window.addEventListener("keydown", handleDeleteRowShortcut, true); // capture phase
-    return () =>
-      window.removeEventListener("keydown", handleDeleteRowShortcut, true);
-  }, [gridApi, deleteSelectedRows]);
 
   // -----------------------------------------
   // Refresh
@@ -575,34 +621,21 @@ const SevaAllocation = () => {
   // -----------------------------------------
   // Default Column
   // -----------------------------------------
+  // Direct in-cell editing has been removed project-wide for this grid.
+  // All add/edit now goes through VolunteerFormModal (see the Actions
+  // column below), which is more reliable at this data volume and
+  // gives every field proper validation.
 
   const defaultColDef = useMemo(
     () => ({
-      editable: true,
+      editable: false,
       sortable: true,
       filter: true,
       floatingFilter: true,
       resizable: true,
-      // Excel-style: a single click SELECTS a cell (or starts a
-      // click-drag range selection via useExcelRangeSelection). It
-      // does NOT open the editor. Double-click, F2, or Alt+ArrowDown
-      // start editing instead (see useExcelRangeSelection.js).
-      //
-      // This was previously `true`, which opened the cell editor on
-      // every single click. That put the grid into "editing" state
-      // immediately on click, and useExcelRangeSelection's keyboard
-      // handler deliberately backs off while editing (so it doesn't
-      // hijack normal typing) - so Ctrl+C / Ctrl+V / Ctrl+D etc. never
-      // reached the range-selection logic at all. This was the actual
-      // cause of "shortcuts don't work."
-      singleClickEdit: false,
-      minWidth: 150,
-      // Highlights every cell that falls inside the current
-      // click-and-drag Excel-style selection - see
-      // useExcelRangeSelection.js.
-      cellClassRules: excel.cellClassRules,
+      minWidth: 140,
     }),
-    [excel.cellClassRules],
+    [],
   );
   // -----------------------------------------
   // Column Definitions
@@ -610,12 +643,7 @@ const SevaAllocation = () => {
 
   const columnDefs = useMemo(
     () => [
-      // Dedicated row-selection column, pinned first. rowSelection's
-      // auto-checkbox (gridOptions.rowSelection.checkboxes) is turned
-      // off below specifically so it doesn't also try to inject a
-      // checkbox on whatever it thinks is the "first" column - that's
-      // what was causing the stray checkbox to show up inside the
-      // Seva Name column instead of here.
+      // Dedicated row-selection column, pinned first.
       {
         headerName: "",
         colId: "rowSelectionCheckbox",
@@ -626,7 +654,6 @@ const SevaAllocation = () => {
         resizable: false,
         sortable: false,
         filter: false,
-        editable: false,
         suppressMovable: true,
         suppressHeaderMenuButton: true,
         checkboxSelection: true,
@@ -635,19 +662,26 @@ const SevaAllocation = () => {
         headerClass: "selection-checkbox-header",
       },
 
+      // Actions column (2nd column): Edit opens VolunteerFormModal
+      // pre-filled with the row; Delete opens the shared confirm popup.
+      {
+        headerName: "Actions",
+        colId: "actions",
+        pinned: "left",
+        width: 90,
+        minWidth: 90,
+        maxWidth: 90,
+        resizable: false,
+        sortable: false,
+        filter: false,
+        suppressMovable: true,
+        suppressHeaderMenuButton: true,
+        cellRenderer: ActionsCellRenderer,
+      },
+
       {
         headerName: "Kendra Name",
         field: "kendraName",
-        editable: true,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: [
-            "",
-            ...(Array.isArray(kendraList) ? kendraList : []).map(
-              (x) => x.kendraName,
-            ),
-          ],
-        },
         pinned: "left",
         width: 180,
       },
@@ -655,44 +689,24 @@ const SevaAllocation = () => {
       {
         headerName: "Seva Name",
         field: "sevaName",
-        editable: true,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: [
-            "",
-            ...(Array.isArray(sevaList) ? sevaList : []).map((x) => x.sevaName),
-          ],
-        },
         width: 220,
       },
 
       {
         headerName: "Shift",
         field: "shift",
-        editable: true,
-        cellEditor: "agSelectCellEditor",
-        cellEditorParams: {
-          values: [
-            "",
-            ...(Array.isArray(shiftList) ? shiftList : []).map(
-              (x) => x.shiftName,
-            ),
-          ],
-        },
         width: 120,
       },
 
       {
         headerName: "Volunteer Name",
         field: "volName",
-        editable: true,
         width: 220,
       },
 
       {
         headerName: "Age",
         field: "age",
-        editable: true,
         filter: "agNumberColumnFilter",
         width: 90,
       },
@@ -700,56 +714,48 @@ const SevaAllocation = () => {
       {
         headerName: "Gender",
         field: "gender",
-        editable: true,
         width: 120,
       },
 
       {
         headerName: "Email ID",
         field: "emailId",
-        editable: true,
         width: 260,
       },
 
       {
         headerName: "Mobile No.",
         field: "mobileNo",
-        editable: true,
         width: 160,
       },
 
       {
         headerName: "Whatsapp No.",
         field: "whatsappNo",
-        editable: true,
         width: 170,
       },
 
       {
         headerName: "Coming to Bapu Since",
         field: "comingToBapuSince",
-        editable: true,
         width: 180,
       },
 
       {
         headerName: "Education",
         field: "education",
-        editable: true,
         width: 180,
       },
 
       {
         headerName: "Occupation",
         field: "occupation",
-        editable: true,
         width: 180,
       },
 
       {
         headerName: "Coming To Thursday Seva",
         field: "comingThursdaySeva",
-        editable: true,
         ...yesNoColumn("comingThursdaySeva"),
         width: 190,
       },
@@ -757,14 +763,12 @@ const SevaAllocation = () => {
       {
         headerName: "Badge No.",
         field: "badgeNo",
-        editable: true,
         width: 150,
       },
 
       {
         headerName: "Thursday Seva Coordinator",
         field: "thursdayCoordinator",
-        editable: true,
         ...yesNoColumn("thursdayCoordinator"),
         width: 220,
       },
@@ -772,20 +776,55 @@ const SevaAllocation = () => {
       {
         headerName: "Utsav Coordinator",
         field: "utsavCoordinator",
-        editable: true,
         ...yesNoColumn("utsavCoordinator"),
         width: 190,
       },
+
+      // QR column (last): opens QRDetailsModal with the volunteer's
+      // actual QR code + name/contact/seva.
+      {
+        headerName: "QR",
+        colId: "qr",
+        pinned: "right",
+        width: 80,
+        minWidth: 80,
+        maxWidth: 80,
+        resizable: false,
+        sortable: false,
+        filter: false,
+        suppressMovable: true,
+        suppressHeaderMenuButton: true,
+        cellRenderer: QRCellRenderer,
+      },
     ],
-    [kendraList, sevaList, shiftList],
+    [],
+  );
+
+  // Rows missing any required field (Kendra, Seva, Shift, Volunteer
+  // Name, Mobile No.) get a red border / mild red background so
+  // incomplete data is easy to spot at a glance.
+  const rowClassRules = useMemo(
+    () => ({
+      "allocation-row-incomplete": (params) => {
+        const data = params.data;
+        if (!data) return false;
+        return REQUIRED_FIELDS.some((field) => !data[field]);
+      },
+    }),
+    [],
   );
 
   // -----------------------------------------
-  // Import from Excel / CSV
+  // Import from Excel / CSV (bulk import - unaffected by the removal
+  // of in-grid cell editing, since it's a bulk file operation, not a
+  // manual per-cell edit)
   // -----------------------------------------
 
   const headerMap = useMemo(
-    () => columnDefs.map((c) => ({ headerName: c.headerName, field: c.field })),
+    () =>
+      columnDefs
+        .filter((c) => c.field)
+        .map((c) => ({ headerName: c.headerName, field: c.field })),
     [columnDefs],
   );
 
@@ -826,31 +865,6 @@ const SevaAllocation = () => {
   );
 
   // -----------------------------------------
-  // Auto Size Columns
-  // -----------------------------------------
-
-  const autoSizeAll = () => {
-    if (!gridApi) return;
-
-    const columns = gridApi.getColumns();
-
-    if (!columns) return;
-
-    gridApi.autoSizeColumns(columns.map((col) => col.getColId()));
-  };
-
-  // -----------------------------------------
-  // Undo / Redo / Fill Down
-  // (undo+redo use ag-grid's own history stack, already enabled via
-  // undoRedoCellEditing in gridOptions below; fillDown is the custom
-  // Excel-style bulk-edit helper from useExcelRangeSelection.js)
-  // -----------------------------------------
-
-  const undo = () => gridApi?.undoCellEditing();
-  const redo = () => gridApi?.redoCellEditing();
-  const fillDown = () => excel.fillDown();
-
-  // -----------------------------------------
   // Clear Filters
   // -----------------------------------------
 
@@ -886,30 +900,17 @@ const SevaAllocation = () => {
 
       animateRows: true,
 
-      pagination: true,
-
-      paginationPageSize: 50,
-
-      // 50 isn't in the grid's default page-size options ([20, 50, 100]),
-      // so list every option explicitly to avoid warnings #94/#95.
-      // 5000 friendly ranges are here too, for when the full mock/live
-      // data set is loaded.
-      paginationPageSizeSelector: [25, 50, 100, 250, 500],
+      // No pagination - the grid always shows every row there is (see
+      // domLayout="autoHeight" below): 40 rows added -> a 40-row
+      // table, 5000 rows added -> a 5000-row table, instead of a
+      // small fixed-size scroll window.
+      pagination: false,
 
       rowHeight: 42,
 
       headerHeight: 45,
 
-      // Rows outside the viewport are not rendered - this is what keeps
-      // ~5000 rows smooth. Raising the row buffer slightly makes fast
-      // scrolling feel less "blank" at the cost of a bit more DOM work.
-      rowBuffer: 15,
-
       suppressDragLeaveHidesColumns: true,
-
-      undoRedoCellEditing: true,
-
-      undoRedoCellEditingLimit: 100,
 
       enableCellTextSelection: true,
 
@@ -934,17 +935,6 @@ const SevaAllocation = () => {
     [],
   );
 
-  // NOTE on cell/range selection:
-  // ag-grid-ENTERPRISE ships a built-in range-selection + clipboard +
-  // fill-handle feature set (CellSelectionModule / ClipboardModule),
-  // which needs a paid license key. Since this file only imports from
-  // ag-grid-community, that path isn't available - the Excel-style
-  // click-drag select, copy/paste, delete, and fill-down behaviour used
-  // here is instead implemented for free in useExcelRangeSelection.js.
-  // If ag-grid-enterprise is added later, that hook can be swapped out
-  // for the native `cellSelection` grid option with no change to the
-  // rest of this file.
-
   return (
     <div className="sevaAllocation-master">
       {/* ========================================= */}
@@ -965,7 +955,7 @@ const SevaAllocation = () => {
       <AllocationToolbar
         searchText={searchText}
         setSearchText={setSearchText}
-        onAddRow={addNewRow}
+        onAddRow={openAddForm}
         onSave={saveAllocation}
         onDelete={deleteSelectedRows}
         onRefresh={refreshGrid}
@@ -973,10 +963,6 @@ const SevaAllocation = () => {
         onExportFile={exportAllocationFile}
         onImportFile={importFromExcel}
         onClearFilters={clearFilters}
-        autoSizeColumns={autoSizeAll}
-        onUndo={undo}
-        onRedo={redo}
-        onFillDown={fillDown}
         unsavedChanges={unsavedChanges}
         selectedRows={selectedRows.length}
         loading={loading}
@@ -985,15 +971,15 @@ const SevaAllocation = () => {
       {/* ========================================= */}
       {/* GRID CARD */}
       {/* ========================================= */}
+      {/* No fixed height on this wrapper - domLayout="autoHeight" on
+          the grid below makes the table's height match the data: a
+          few rows stay compact, thousands of rows expand and the page
+          itself scrolls, instead of a cramped inner scroll window. */}
 
       <div className="sevaAllocation-card">
         <div
-          ref={excel.containerRef}
           className="ag-theme-quartz sevaAllocation-grid"
-          style={{
-            width: "100%",
-            height: "72vh",
-          }}
+          style={{ width: "100%" }}
         >
           <AgGridReact
             ref={gridRef}
@@ -1001,12 +987,16 @@ const SevaAllocation = () => {
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             gridOptions={gridOptions}
+            rowClassRules={rowClassRules}
+            domLayout="autoHeight"
             getRowId={getRowId}
+            context={{
+              onEditRow: openEditForm,
+              onDeleteRow: requestDeleteRow,
+              onViewQr: openQrModal,
+            }}
             onGridReady={onGridReady}
             onSelectionChanged={onSelectionChanged}
-            onCellValueChanged={onCellValueChanged}
-            onCellMouseDown={excel.handleCellMouseDown}
-            onCellMouseOver={excel.handleCellMouseOver}
           />
         </div>
       </div>
@@ -1033,11 +1023,55 @@ const SevaAllocation = () => {
         </div>
 
         <div className="sevaAllocation-hint">
-          Tip: click a cell (or drag) to select, double-click or F2 to edit.
-          Ctrl+C / Ctrl+V to copy-paste like Excel, Ctrl+Z / Ctrl+Y to undo /
-          redo, Ctrl+D to fill down.
+          Tip: use the ✎ icon to edit a volunteer, 🗑 to delete, and the QR
+          icon to view their QR code. Rows outlined in red are missing
+          required details.
         </div>
       </div>
+
+      {/* ========================================= */}
+      {/* ADD / EDIT VOLUNTEER FORM */}
+      {/* ========================================= */}
+
+      <VolunteerFormModal
+        open={formModalOpen}
+        mode={formMode}
+        initialData={editingRow}
+        kendraList={kendraList}
+        sevaList={sevaList}
+        shiftList={shiftList}
+        onSave={handleFormSave}
+        onCancel={closeForm}
+      />
+
+      {/* ========================================= */}
+      {/* QR DETAILS POPUP */}
+      {/* ========================================= */}
+
+      <QRDetailsModal open={qrModalOpen} row={qrRow} onClose={closeQrModal} />
+
+      {/* ========================================= */}
+      {/* DELETE CONFIRMATION (single row) - entity-aware, shared */}
+      {/* ========================================= */}
+
+      <ConfirmModal
+        open={showDeleteRowModal}
+        action="delete"
+        entity={ENTITY}
+        recordName={rowPendingDelete?.volName}
+        onConfirm={confirmDeleteRow}
+        onCancel={cancelDeleteRow}
+      />
+
+      {/* ========================================= */}
+      {/* SAVE / UPDATE / DELETE SUCCESS - entity-aware, shared */}
+      {/* ========================================= */}
+
+      <ResultModal
+        open={showSuccessModal}
+        message={successMessage}
+        onClose={closeSuccessModal}
+      />
 
       {/* ========================================= */}
       {/* LOADING OVERLAY */}

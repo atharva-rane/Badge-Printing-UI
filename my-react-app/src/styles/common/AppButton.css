@@ -1,0 +1,83 @@
+/* =====================================================
+   APP BUTTON (shared across the whole project)
+   Colors intentionally match the palette already used
+   in the app (Bootstrap-style green/blue/red/grey/amber).
+===================================================== */
+
+.app-btn {
+  min-width: 95px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: 0.25s;
+}
+
+.app-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.app-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.app-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.app-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+}
+
+/* Variants */
+.app-btn--save,
+.app-btn--add {
+  background: #28a745;
+}
+
+.app-btn--update {
+  background: #007bff;
+}
+
+.app-btn--delete {
+  background: #dc3545;
+}
+
+.app-btn--clear,
+.app-btn--cancel {
+  background: #6c757d;
+}
+
+.app-btn--export {
+  background: #ffc107;
+  color: #000;
+}
+
+.app-btn--exportFile {
+  background: #17a2b8;
+}
+
+.app-btn--upload {
+  background: #007bff;
+}
+
+.app-btn--default {
+  background: #4b5563;
+}
+
+.app-btn--icon-only {
+  min-width: unset;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 15px;
+}

@@ -1,0 +1,27 @@
+.qr-details-modal {
+  max-width: 320px;
+}
+
+.qr-details-code {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.qr-details-info {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+}

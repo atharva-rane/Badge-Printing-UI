@@ -3,171 +3,130 @@
 ========================================================== */
 
 .allocationToolbar {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,.08);
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
-/* ---------------------------------------------------------
-   Search
---------------------------------------------------------- */
+/* ============================================
+   SEARCH ROW
+============================================ */
 
-.allocationToolbar-search {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 260px;
-  flex: 1 1 260px;
+.allocationToolbar-search{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding-bottom:8px;   /* optional */
 }
 
-.allocationToolbar-search label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+.allocationToolbar-search label{
+    font-size:14px;
+    font-weight:600;
+    min-width:70px;
+    color:#555;
 }
 
-.allocationToolbar-search input {
-  border: 1px solid #dcdcdc;
-  border-radius: 6px;
-  padding: 9px 12px;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+.allocationToolbar-search input{
+    width:350px;
+    max-width:100%;
+    height:40px;
+    border:1px solid #d8d8d8;
+    border-radius:6px;
+    padding:0 14px;
+    font-size:14px;
 }
 
-.allocationToolbar-search input:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+.allocationToolbar-search input:focus{
+    outline:none;
+    border-color:#0d6efd;
+    box-shadow:0 0 0 3px rgba(13,110,253,.12);
 }
 
-/* ---------------------------------------------------------
-   Buttons
---------------------------------------------------------- */
+/* ============================================
+   BUTTON ROW
+============================================ */
 
-.allocationToolbar-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+.allocationToolbar-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    border-bottom:1px solid #ececec;
+    padding-bottom:15px;
 }
 
-.allocationToolbar-divider {
-  width: 1px;
-  height: 26px;
-  background: #e3e6ea;
-  margin: 0 2px;
+.allocationToolbar-buttons button{
+    border:none;
+    color:#fff;
+    border-radius:6px;
+    padding:10px 18px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
 }
 
-.allocationToolbar-buttons button {
-  border: none;
-  border-radius: 6px;
-  padding: 9px 14px;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease, transform 0.05s ease, opacity 0.15s ease;
-  color: #fff;
+/* ============================================
+   STATUS ROW
+============================================ */
+
+.allocationToolbar-status{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
 }
 
-.allocationToolbar-buttons button:active {
-  transform: translateY(1px);
+.allocation-status-item{
+    font-size:14px;
+    font-weight:500;
 }
 
-.allocationToolbar-buttons button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.allocation-saved{
+    color:#198754;
+    font-weight:600;
 }
 
-.allocation-add-btn { background: #0d6efd; }
-.allocation-add-btn:hover:not(:disabled) { background: #0b5ed7; }
+.allocation-unsaved{
+    color:#dc3545;
+    font-weight:600;
+}
 
-.allocation-save-btn { background: #198754; }
-.allocation-save-btn:hover:not(:disabled) { background: #157347; }
+/* ============================================
+   BUTTON COLORS
+============================================ */
 
-.allocation-delete-btn { background: #dc3545; }
-.allocation-delete-btn:hover:not(:disabled) { background: #bb2d3b; }
+.allocation-add-btn{background:#0d6efd;}
+.allocation-add-btn:hover{background:#0b5ed7;}
 
-.allocation-undo-btn,
-.allocation-redo-btn,
-.allocation-fill-btn { background: #6c757d; }
-.allocation-undo-btn:hover:not(:disabled),
-.allocation-redo-btn:hover:not(:disabled),
-.allocation-fill-btn:hover:not(:disabled) { background: #5c636a; }
+.allocation-save-btn{background:#198754;}
+.allocation-save-btn:hover{background:#157347;}
 
-.allocation-refresh-btn { background: #0dcaf0; color: #04333d; }
-.allocation-refresh-btn:hover:not(:disabled) { background: #0bb6d8; }
-
-.allocation-import-btn { background: #6610f2; }
-.allocation-import-btn:hover:not(:disabled) { background: #560bd0; }
+.allocation-delete-btn{background:#dc3545;}
+.allocation-delete-btn:hover{background:#bb2d3b;}
 
 .allocation-export-btn,
-.allocation-export-file-btn { background: #fd7e14; }
-.allocation-export-btn:hover:not(:disabled),
-.allocation-export-file-btn:hover:not(:disabled) { background: #e56c0c; }
-
-.allocation-clear-btn { background: #adb5bd; color: #333; }
-.allocation-clear-btn:hover:not(:disabled) { background: #97a0a8; }
-
-.allocation-autosize-btn { background: #212529; }
-.allocation-autosize-btn:hover:not(:disabled) { background: #000; }
-
-.allocation-import-input {
-  display: none;
+.allocation-export-file-btn{
+    background:#fd7e14;
 }
 
-/* ---------------------------------------------------------
-   Status
---------------------------------------------------------- */
-
-.allocationToolbar-status {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-left: auto;
+.allocation-export-btn:hover,
+.allocation-export-file-btn:hover{
+    background:#e56c0c;
 }
 
-.allocation-status-item {
-  font-size: 13.5px;
-  color: #444;
+.allocation-clear-btn{
+    background:#6c757d;
 }
 
-.allocation-unsaved {
-  color: #dc3545;
-  font-weight: 600;
+.allocation-clear-btn:hover{
+    background:#5c636a;
 }
 
-.allocation-saved {
-  color: #198754;
-  font-weight: 600;
-}
-
-/* ---------------------------------------------------------
-   Responsive
---------------------------------------------------------- */
-
-@media (max-width: 992px) {
-  .allocationToolbar-status {
-    margin-left: 0;
-    width: 100%;
-    justify-content: space-between;
-  }
-}
-
-@media (max-width: 480px) {
-  .allocationToolbar {
-    padding: 12px;
-  }
-
-  .allocationToolbar-buttons button {
-    flex: 1 1 calc(50% - 8px);
-  }
+.allocationToolbar-buttons button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
 }

@@ -1,0 +1,43 @@
+.bulk-preview-wrap {
+  margin-top: 14px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.bulk-preview-count {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  background: #f1f5f9;
+  border-bottom: 1px solid #94a3b8;
+  position: sticky;
+  top: 0;
+}
+
+.bulk-preview-table {
+  font-size: 13.5px;
+}
+
+.bulk-preview-table thead {
+  background: #007bff;
+  position: sticky;
+  top: 33px;
+}
+
+.bulk-preview-table thead th {
+  color: #fff;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.bulk-preview-table td {
+  padding: 8px 12px;
+}
+
+.bulk-preview-empty {
+  margin-top: 12px;
+  color: #6b7280;
+  font-size: 13.5px;
+  font-style: italic;
+}

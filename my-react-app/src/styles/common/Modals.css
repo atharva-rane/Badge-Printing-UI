@@ -1,0 +1,62 @@
+/* =====================================================
+   SHARED MODALS (Confirm / Result) - used across the
+   whole project for save / update / delete popups.
+===================================================== */
+
+.app-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  animation: appModalFadeIn 0.15s ease;
+}
+
+@keyframes appModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.app-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 26px 28px;
+  width: 92%;
+  max-width: 380px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+.app-modal h4 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #1f2937;
+}
+
+.app-modal p {
+  margin: 0 0 22px;
+  color: #4b5563;
+  font-size: 14.5px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.app-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.app-modal--error h4 {
+  color: #dc3545;
+}
+
+.app-modal--success h4 {
+  color: #198754;
+}

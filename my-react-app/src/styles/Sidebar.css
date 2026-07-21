@@ -320,10 +320,24 @@
 /* hide logout text in collapsed */
 .sidebar.collapsed .logout-btn {
   justify-content: center;
+  padding: 14px 0;
 }
 
 .sidebar.collapsed .logout-btn span {
   display: none;
+}
+
+/* Keep the logout icon the same crisp size/centering as every other
+   sidebar icon instead of getting squeezed by the button's padding
+   when the sidebar shrinks to its collapsed width. */
+.logout-icon {
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.sidebar.collapsed .logout-icon {
+  font-size: 20px;
+  margin: 0 auto;
 }
 
 /* ===========================

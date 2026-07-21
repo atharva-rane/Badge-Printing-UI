@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import Loader from "../../../Loader";
+import AppButton from "../../../common/AppButton";
+import SearchBar from "../../../common/SearchBar";
+import ConfirmModal from "../../../common/ConfirmModal";
+import ResultModal, { buildResultMessage } from "../../../common/ResultModal";
 import "../../../../styles/masters/UtsavMaster.css";
 
 // ===============================
@@ -7,16 +11,18 @@ import "../../../../styles/masters/UtsavMaster.css";
 // ===============================
 
 const ADD_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/AddUtsav";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/AddUtsav";
 
 const UPDATE_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/UpdateUtsav";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/UpdateUtsav";
 
 const DELETE_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/DeleteUtsav";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/DeleteUtsav";
 
 const GET_API =
-  "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
+  "https://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
+
+const ENTITY = "Utsav";
 
 // ===============================
 // COMPONENT
@@ -50,12 +56,6 @@ const UtsavMaster = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [successMessage, setSuccessMessage] = useState("");
-
-  // ===============================
-  // LOADER STATES
-  // ===============================
-
-  const [progress, setProgress] = useState(null);
 
   // ===============================
   // GENERIC API REQUEST
@@ -97,7 +97,6 @@ const UtsavMaster = () => {
   const getUtsavList = async () => {
     try {
       setLoading(true);
-      setProgress(null);
 
       const response = await fetch(GET_API);
 
@@ -158,21 +157,18 @@ const UtsavMaster = () => {
     };
 
     try {
-      // Loader message
-      setLoaderText("Saving Utsav...");
-
-      // Show loader
+      setLoaderText(`Saving ${ENTITY}...`);
       setLoading(true);
 
       await apiRequest(ADD_API, "POST", payload);
 
       await getUtsavList();
 
-      handleClear();
-
-      setSuccessMessage("Saved successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "saved", payload.utsavName));
 
       setShowSuccessModal(true);
+
+      handleClear();
     } catch (error) {
       console.error(error);
 
@@ -249,7 +245,7 @@ const UtsavMaster = () => {
 
   const confirmUpdate = async () => {
     try {
-      setLoaderText("Updating Utsav...");
+      setLoaderText(`Updating ${ENTITY}...`);
       setLoading(true);
 
       const payload = {
@@ -264,11 +260,11 @@ const UtsavMaster = () => {
 
       setShowUpdateModal(false);
 
-      handleClear();
-
-      setSuccessMessage("Updated successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "updated", payload.utsavName));
 
       setShowSuccessModal(true);
+
+      handleClear();
     } catch (error) {
       console.error(error);
 
@@ -301,12 +297,14 @@ const UtsavMaster = () => {
 
   const confirmDelete = async () => {
     try {
-      setLoaderText("Deleting Utsav...");
+      setLoaderText(`Deleting ${ENTITY}...`);
       setLoading(true);
 
       const payload = {
         utsavID: selectedId,
       };
+
+      const deletedName = utsavName;
 
       await apiRequest(DELETE_API, "DELETE", payload);
 
@@ -314,11 +312,11 @@ const UtsavMaster = () => {
 
       setShowDeleteModal(false);
 
-      handleClear();
-
-      setSuccessMessage("Deleted successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "deleted", deletedName));
 
       setShowSuccessModal(true);
+
+      handleClear();
     } catch (error) {
       console.error(error);
 
@@ -348,30 +346,19 @@ const UtsavMaster = () => {
 
   return (
     <div className="utsavMaster-master">
-      {/* ===============================
-          LOADER
-      =============================== */}
-
+      {/* LOADER */}
       <Loader loading={loading} text={loaderText} />
 
-      {/* ===============================
-          HEADER
-      =============================== */}
-
+      {/* HEADER */}
       <div className="utsavMaster-header">
         <div className="utsavMaster-title">
           <h2>Utsav Master</h2>
-
           <p>Manage Utsav Records</p>
         </div>
       </div>
-      {/* ===============================
-          FORM CARD
-      =============================== */}
 
+      {/* FORM CARD */}
       <div className="utsavMaster-card">
-        {/* UTSAV NAME */}
-
         <div className="utsavMaster-form-group">
           <label className="utsavMaster-label">
             Utsav Name
@@ -389,72 +376,40 @@ const UtsavMaster = () => {
           />
         </div>
 
-        {/* BUTTONS */}
-
+        {/* BUTTONS - shared AppButton component */}
         <div className="utsavMaster-button-group">
-          <button
-            type="button"
-            className="utsavMaster-save-btn"
-            onClick={handleSave}
-          >
+          <AppButton variant="save" onClick={handleSave}>
             Save
-          </button>
-
-          <button
-            type="button"
-            className="utsavMaster-update-btn"
-            onClick={handleUpdate}
-          >
+          </AppButton>
+          <AppButton variant="update" onClick={handleUpdate}>
             Update
-          </button>
-
-          <button
-            type="button"
-            className="utsavMaster-delete-btn"
-            onClick={handleDelete}
-          >
+          </AppButton>
+          <AppButton variant="delete" onClick={handleDelete}>
             Delete
-          </button>
-
-          <button
-            type="button"
-            className="utsavMaster-clear-btn"
-            onClick={handleClear}
-          >
+          </AppButton>
+          <AppButton variant="clear" onClick={handleClear}>
             Clear
-          </button>
+          </AppButton>
         </div>
       </div>
 
-      {/* ===============================
-          SEARCH CARD
-      =============================== */}
-
+      {/* SEARCH CARD - shared SearchBar component */}
       <div className="utsavMaster-card">
-        <div className="utsavMaster-search-container">
-          <label className="utsavMaster-search-label">Search Utsav</label>
-
-          <input
-            type="text"
-            className="utsavMaster-search-input"
-            placeholder="Search by Utsav Name..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            autoComplete="off"
-          />
-        </div>
+        <SearchBar
+          label="Search Utsav"
+          placeholder="Search by Utsav Name..."
+          value={searchText}
+          onChange={setSearchText}
+        />
       </div>
-      {/* ===============================
-          TABLE
-      =============================== */}
 
+      {/* TABLE */}
       <div className="utsavMaster-card">
-        <div className="utsavMaster-table-responsive">
-          <table className="utsavMaster-table">
+        <div className="utsavMaster-table-responsive app-table-container">
+          <table className="utsavMaster-table app-table">
             <thead>
               <tr>
                 <th width="80">Sr.</th>
-
                 <th>Utsav Name</th>
               </tr>
             </thead>
@@ -470,12 +425,9 @@ const UtsavMaster = () => {
                         ? "utsavMaster-selected-row"
                         : ""
                     }
-                    style={{
-                      cursor: "pointer",
-                    }}
+                    style={{ cursor: "pointer" }}
                   >
                     <td>{index + 1}</td>
-
                     <td>{item.utsavName}</td>
                   </tr>
                 ))
@@ -489,92 +441,33 @@ const UtsavMaster = () => {
             </tbody>
           </table>
         </div>
-        {/* ===============================
-            SUCCESS POPUP
-        =============================== */}
 
-        {showSuccessModal && (
-          <div className="utsavMaster-success-overlay">
-            <div className="utsavMaster-success-modal">
-              <h4>Success</h4>
+        {/* SUCCESS POPUP - entity-aware, shared component */}
+        <ResultModal
+          open={showSuccessModal}
+          message={successMessage}
+          onClose={closeSuccessModal}
+        />
 
-              <p>{successMessage}</p>
+        {/* UPDATE CONFIRMATION - entity-aware, shared component */}
+        <ConfirmModal
+          open={showUpdateModal}
+          action="update"
+          entity={ENTITY}
+          recordName={utsavName}
+          onConfirm={confirmUpdate}
+          onCancel={cancelUpdate}
+        />
 
-              <div className="utsavMaster-success-buttons">
-                <button
-                  type="button"
-                  className="utsavMaster-success-btn"
-                  onClick={closeSuccessModal}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===============================
-            UPDATE CONFIRMATION POPUP
-        =============================== */}
-
-        {showUpdateModal && (
-          <div className="utsavMaster-update-overlay">
-            <div className="utsavMaster-update-modal">
-              <h4>Update Confirmation</h4>
-
-              <p>Are you sure you want to update this Utsav?</p>
-
-              <div className="utsavMaster-update-buttons">
-                <button
-                  type="button"
-                  className="utsavMaster-update-cancel-btn"
-                  onClick={cancelUpdate}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  className="utsavMaster-update-confirm-btn"
-                  onClick={confirmUpdate}
-                >
-                  Update
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* ===============================
-            DELETE CONFIRMATION POPUP
-        =============================== */}
-
-        {showDeleteModal && (
-          <div className="utsavMaster-delete-overlay">
-            <div className="utsavMaster-delete-modal">
-              <h4>Delete Confirmation</h4>
-
-              <p>Are you sure you want to delete this Utsav?</p>
-
-              <div className="utsavMaster-delete-buttons">
-                <button
-                  type="button"
-                  className="utsavMaster-delete-cancel-btn"
-                  onClick={cancelDelete}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="button"
-                  className="utsavMaster-delete-confirm-btn"
-                  onClick={confirmDelete}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* DELETE CONFIRMATION - entity-aware, shared component */}
+        <ConfirmModal
+          open={showDeleteModal}
+          action="delete"
+          entity={ENTITY}
+          recordName={utsavName}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
       </div>
     </div>
   );

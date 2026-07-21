@@ -1,0 +1,37 @@
+.allocation-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+}
+
+.allocation-action-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.allocation-action-edit {
+  color: #007bff;
+}
+
+.allocation-action-edit:hover {
+  background: rgba(0, 123, 255, 0.12);
+}
+
+.allocation-action-delete {
+  color: #dc3545;
+}
+
+.allocation-action-delete:hover {
+  background: rgba(220, 53, 69, 0.12);
+}

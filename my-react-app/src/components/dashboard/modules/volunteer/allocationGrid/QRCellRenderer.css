@@ -1,0 +1,25 @@
+.allocation-qr-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.allocation-qr-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  color: #007bff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.allocation-qr-btn:hover {
+  background: rgba(0, 123, 255, 0.12);
+}

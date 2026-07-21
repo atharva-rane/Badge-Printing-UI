@@ -1,7 +1,36 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import "../../../../styles/masters/SevaCoordinatorMaster.css";
-import { FaTrashAlt } from "react-icons/fa";
 import Loader from "../../../Loader";
+import AppButton from "../../../common/AppButton";
+import SearchBar from "../../../common/SearchBar";
+import ConfirmModal from "../../../common/ConfirmModal";
+import ResultModal, { buildResultMessage } from "../../../common/ResultModal";
+import BulkPreviewTable from "../../../common/BulkPreviewTable";
+import { importExcelFile } from "../../../../utils/importExcel";
+
+const ENTITY = "Seva Coordinator";
+
+// Bulk-upload preview columns - dynamically renders as many rows as the
+// CSV/Excel file contains (see BulkPreviewTable). Header names match
+// the same labels used by the Export CSV below; adjust here if the
+// backend's real upload template uses different column headers.
+const BULK_PREVIEW_COLUMNS = [
+  { key: "utsav", label: "Utsav" },
+  { key: "seva", label: "Seva" },
+  { key: "coordinator1Name", label: "Coordinator 1" },
+  { key: "coordinator1Contact", label: "Contact 1" },
+  { key: "coordinator2Name", label: "Coordinator 2" },
+  { key: "coordinator2Contact", label: "Contact 2" },
+];
+
+const BULK_HEADER_MAP = [
+  { headerName: "Utsav", field: "utsav" },
+  { headerName: "Seva", field: "seva" },
+  { headerName: "Coordinator 1", field: "coordinator1Name" },
+  { headerName: "Contact 1", field: "coordinator1Contact" },
+  { headerName: "Coordinator 2", field: "coordinator2Name" },
+  { headerName: "Contact 2", field: "coordinator2Contact" },
+];
 
 const SevaCoordinatorMaster = () => {
   // ==========================
@@ -36,6 +65,7 @@ const SevaCoordinatorMaster = () => {
   const [searchText, setSearchText] = useState("");
 
   const [file, setFile] = useState(null);
+  const [bulkPreviewRows, setBulkPreviewRows] = useState([]);
 
   // ==========================
   // MODALS
@@ -64,22 +94,33 @@ const SevaCoordinatorMaster = () => {
   // ==========================
 
   const UTSAV_API =
-    "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
+    "https:TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList";
 
   const SEVA_API =
-    "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList";
+    "https:TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList";
 
-  const COORDINATOR_API = "----- Paste Your Link Here -----";
+  // NOTE: you gave Add / Update / Delete / Upload endpoints but not
+  // a "get list" endpoint. Following the same naming pattern as
+  // UTSAV_API / SEVA_API, this assumes the list endpoint is
+  // GetSevaCoordinatorList — update this if the real path differs.
+  const COORDINATOR_API =
+    "https://TBATCHAPI.somee.com/batchprinting/api/SevaCoordinator/GetSevaCoordinatorList";
+
+  const ADD_COORDINATOR_API =
+    "https://TBATCHAPI.somee.com/batchprinting/api/SevaCoordinator/AddSevaCoordinator";
+
+  const UPDATE_COORDINATOR_API =
+    "https://TBATCHAPI.somee.com/batchprinting/api/SevaCoordinator/UpdateSevaCoordinator";
+
+  const DELETE_COORDINATOR_API =
+    "https://TBATCHAPI.somee.com/batchprinting/api/SevaCoordinator/DeleteSevaCoordinator";
+
+  const UPLOAD_COORDINATOR_API =
+    "https://TBATCHAPI.somee.com/batchprinting/api/SevaCoordinator/UploadFile";
 
   // ==========================
-  // SAMPLE DATA
+  // LIST STATES
   // ==========================
-
-  const [utsavList, setUtsavList] = useState([]);
-
-  const [sevaList, setSevaList] = useState([]);
-
-  // Coordinator List
 
   const [coordinatorList, setCoordinatorList] = useState([]);
 
@@ -88,12 +129,8 @@ const SevaCoordinatorMaster = () => {
   // ==========================
 
   const loadUtsavList = async () => {
-    console.log("Loading Utsav...");
-
     try {
       const response = await fetch(UTSAV_API);
-
-      console.log("Status:", response.status);
 
       if (!response.ok) {
         throw new Error(`Utsav API Error : ${response.status}`);
@@ -101,19 +138,17 @@ const SevaCoordinatorMaster = () => {
 
       const result = await response.json();
 
-      console.log("Result:", result);
-
       const list = Array.isArray(result.data)
         ? result.data
         : Array.isArray(result)
           ? result
           : [];
 
-      console.log("Final List:", list);
-
       setUtsavOptions(list);
     } catch (error) {
       console.error("Error loading Utsav:", error);
+
+      setUtsavOptions([]);
     }
   };
 
@@ -130,8 +165,6 @@ const SevaCoordinatorMaster = () => {
       }
 
       const result = await response.json();
-
-      console.log("Seva API Response:", result);
 
       const list = Array.isArray(result.data)
         ? result.data
@@ -152,15 +185,15 @@ const SevaCoordinatorMaster = () => {
   // ==========================
 
   const getUtsavName = (id) => {
-    const item = utsavOptions.find(
-      (x) => String(x.utsavID ?? x.utsavId) === String(id),
-    );
+    const item = utsavOptions.find((x) => String(x.utsavID) === String(id));
 
     return item?.utsavName || "";
   };
 
   const getSevaName = (id) => {
-    const item = allSevaList.find((x) => String(x.sevaId) === String(id));
+    const item = allSevaList.find(
+      (x) => String(x.sevaID ?? x.sevaId) === String(id),
+    );
 
     return item?.sevaName || "";
   };
@@ -172,7 +205,6 @@ const SevaCoordinatorMaster = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Contact validation
     if (name === "coordinator1Contact" || name === "coordinator2Contact") {
       if (!/^\d*$/.test(value)) {
         return;
@@ -181,9 +213,9 @@ const SevaCoordinatorMaster = () => {
 
     setFormData((prev) => ({
       ...prev,
+
       [name]: value,
 
-      // Clear Seva when Utsav changes
       ...(name === "utsavId" ? { sevaId: "" } : {}),
     }));
   };
@@ -196,9 +228,9 @@ const SevaCoordinatorMaster = () => {
     setSelectedId(item.id);
 
     setFormData({
-      utsavId: item.utsavId ?? item.utsavID ?? "",
+      utsavId: item.utsavID ?? "",
 
-      sevaId: item.sevaId ?? "",
+      sevaId: item.sevaID ?? "",
 
       coordinator1Name: item.coordinator1Name ?? "",
 
@@ -222,49 +254,83 @@ const SevaCoordinatorMaster = () => {
     setSevaOptions([]);
   };
 
+  // A short display label for the currently selected/entered record,
+  // used to build entity-aware "Coordinator X saved/updated/deleted"
+  // popup messages.
+  const currentRecordLabel = () => {
+    const seva = getSevaName(formData.sevaId);
+    return (
+      [formData.coordinator1Name, seva].filter(Boolean).join(" - ") || null
+    );
+  };
+
   // ==========================
-  // SAVE RECORD
+  // SAVE RECORD (ADD API)
   // ==========================
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.utsavId || !formData.sevaId || !formData.coordinator1Name) {
       alert("Please fill required fields.");
+
       return;
     }
 
     const duplicate = coordinatorList.some(
       (item) =>
-        String(item.utsavId) === String(formData.utsavId) &&
-        String(item.sevaId) === String(formData.sevaId),
+        String(item.utsavID) === String(formData.utsavId) &&
+        String(item.sevaID) === String(formData.sevaId),
     );
 
     if (duplicate) {
       alert("This Seva Coordinator already exists.");
+
       return;
     }
 
-    setLoaderText("Saving Seva Coordinator...");
+    setLoaderText(`Saving ${ENTITY}...`);
+
     setLoading(true);
 
-    setTimeout(() => {
-      const newRecord = {
-        id: Date.now(),
-
-        recId: "SC" + String(coordinatorList.length + 1).padStart(3, "0"),
-
-        ...formData,
+    try {
+      const payload = {
+        Utsav_Name: getUtsavName(formData.utsavId),
+        SevaName: getSevaName(formData.sevaId),
+        Coordinator_1_Name: formData.coordinator1Name,
+        Coordinator_1_ContactNo: formData.coordinator1Contact,
+        Coordinator_2_Name: formData.coordinator2Name,
+        Coordinator_2_ContactNo: formData.coordinator2Contact,
       };
 
-      setCoordinatorList((prev) => [...prev, newRecord]);
+      const recordLabel = currentRecordLabel();
 
-      setLoading(false);
+      const response = await fetch(ADD_COORDINATOR_API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
-      setSuccessMessage("Saved successfully.");
+      if (!response.ok) {
+        throw new Error(`Add Coordinator API Error : ${response.status}`);
+      }
+
+      await response.json();
+
+      await loadCoordinatorList();
+
+      setSuccessMessage(buildResultMessage(ENTITY, "saved", recordLabel));
 
       setShowSuccessModal(true);
 
       handleClear();
-    }, 800);
+    } catch (error) {
+      console.error("Error saving Coordinator:", error);
+
+      alert("Failed to save Seva Coordinator. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const closeSuccessModal = () => {
@@ -291,33 +357,61 @@ const SevaCoordinatorMaster = () => {
     setShowUpdateModal(true);
   };
 
-  const confirmUpdate = () => {
-    setLoaderText("Updating Seva Coordinator...");
+  const confirmUpdate = async () => {
+    setLoaderText(`Updating ${ENTITY}...`);
 
     setLoading(true);
 
-    setTimeout(() => {
-      const updatedList = coordinatorList.map((item) =>
-        item.id === selectedId
-          ? {
-              ...item,
-              ...formData,
-            }
-          : item,
+    try {
+      const selectedRecord = coordinatorList.find(
+        (item) => item.id === selectedId,
       );
 
-      setCoordinatorList(updatedList);
+      const payload = {
+        id: selectedId,
+        recId: selectedRecord?.recId,
+        Utsav_Name: getUtsavName(formData.utsavId),
+        SevaName: getSevaName(formData.sevaId),
+        Coordinator_1_Name: formData.coordinator1Name,
+        Coordinator_1_ContactNo: formData.coordinator1Contact,
+        Coordinator_2_Name: formData.coordinator2Name,
+        Coordinator_2_ContactNo: formData.coordinator2Contact,
+      };
 
-      setLoading(false);
+      const recordLabel = currentRecordLabel();
+
+      const response = await fetch(UPDATE_COORDINATOR_API, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Update Coordinator API Error : ${response.status}`);
+      }
+
+      await response.json();
+
+      await loadCoordinatorList();
 
       setShowUpdateModal(false);
 
-      setSuccessMessage("Updated successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "updated", recordLabel));
 
       setShowSuccessModal(true);
 
       handleClear();
-    }, 800);
+    } catch (error) {
+      console.error("Error updating Coordinator:", error);
+
+      setShowUpdateModal(false);
+
+      alert("Failed to update Seva Coordinator. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelUpdate = () => {
@@ -338,26 +432,43 @@ const SevaCoordinatorMaster = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = () => {
-    setLoaderText("Deleting Seva Coordinator...");
+  const confirmDelete = async () => {
+    setLoaderText(`Deleting ${ENTITY}...`);
 
     setLoading(true);
 
-    setTimeout(() => {
-      setCoordinatorList((prev) =>
-        prev.filter((item) => item.id !== selectedId),
+    try {
+      const recordLabel = currentRecordLabel();
+
+      const response = await fetch(
+        `${DELETE_COORDINATOR_API}?id=${selectedId}`,
+        {
+          method: "DELETE",
+        },
       );
 
-      setLoading(false);
+      if (!response.ok) {
+        throw new Error(`Delete Coordinator API Error : ${response.status}`);
+      }
+
+      await loadCoordinatorList();
 
       setShowDeleteModal(false);
 
-      setSuccessMessage("Deleted successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "deleted", recordLabel));
 
       setShowSuccessModal(true);
 
       handleClear();
-    }, 800);
+    } catch (error) {
+      console.error("Error deleting Coordinator:", error);
+
+      setShowDeleteModal(false);
+
+      alert("Failed to delete Seva Coordinator. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelDelete = () => {
@@ -372,17 +483,18 @@ const SevaCoordinatorMaster = () => {
     const search = searchText.toLowerCase();
 
     return coordinatorList.filter((item) => {
-      const utsav = getUtsavName(item.utsavId).toLowerCase();
+      const utsav = getUtsavName(item.utsavID).toLowerCase();
 
-      const seva = getSevaName(item.sevaId).toLowerCase();
+      const seva = getSevaName(item.sevaID).toLowerCase();
 
       return (
         utsav.includes(search) ||
         seva.includes(search) ||
-        item.coordinator1Name.toLowerCase().includes(search) ||
-        item.coordinator2Name.toLowerCase().includes(search)
+        item.coordinator1Name?.toLowerCase().includes(search) ||
+        item.coordinator2Name?.toLowerCase().includes(search)
       );
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText, coordinatorList, utsavOptions, allSevaList]);
 
   // ==========================
@@ -391,27 +503,18 @@ const SevaCoordinatorMaster = () => {
 
   const handleExport = () => {
     const header = [
-      "Rec ID",
-
       "Utsav",
-
       "Seva",
-
       "Coordinator 1",
-
       "Contact 1",
-
       "Coordinator 2",
-
       "Contact 2",
     ];
 
     const rows = coordinatorList.map((item) => [
-      item.recId,
+      getUtsavName(item.utsavID),
 
-      getUtsavName(item.utsavId),
-
-      getSevaName(item.sevaId),
+      getSevaName(item.sevaID),
 
       item.coordinator1Name,
 
@@ -422,11 +525,7 @@ const SevaCoordinatorMaster = () => {
       item.coordinator2Contact,
     ]);
 
-    const csvContent = [header, ...rows]
-
-      .map((row) => row.join(","))
-
-      .join("\n");
+    const csvContent = [header, ...rows].map((row) => row.join(",")).join("\n");
 
     const blob = new Blob([csvContent], {
       type: "text/csv;charset=utf-8;",
@@ -446,53 +545,80 @@ const SevaCoordinatorMaster = () => {
   };
 
   // ==========================
-  // BULK CSV UPLOAD
+  // BULK CSV UPLOAD (UPLOAD API) - preview grows dynamically to match
+  // however many coordinator rows are in the file.
   // ==========================
 
-  const handleUpload = () => {
+  const handleFileSelected = async (selectedFile) => {
+    setFile(selectedFile);
+
+    if (!selectedFile) {
+      setBulkPreviewRows([]);
+      return;
+    }
+
+    try {
+      const parsed = await importExcelFile(selectedFile, BULK_HEADER_MAP);
+      setBulkPreviewRows(parsed);
+    } catch (error) {
+      console.error("Preview parse error:", error);
+      setBulkPreviewRows([]);
+    }
+  };
+
+  const handleUpload = async () => {
     if (!file) {
       alert("Select CSV File");
 
       return;
     }
 
-    const reader = new FileReader();
+    setLoaderText(`Uploading ${ENTITY}s...`);
 
-    reader.onload = (e) => {
-      const rows = e.target.result.trim().split("\n").slice(1);
+    setLoading(true);
 
-      const data = rows.map((row, index) => {
-        const col = row.split(",");
+    try {
+      const formPayload = new FormData();
 
-        return {
-          id: Date.now() + index,
+      formPayload.append("file", file);
 
-          recId: col[0],
-
-          utsavId: col[1],
-
-          sevaId: col[2],
-
-          coordinator1Name: col[3],
-
-          coordinator1Contact: col[4],
-
-          coordinator2Name: col[5] || "",
-
-          coordinator2Contact: col[6] || "",
-        };
+      const response = await fetch(UPLOAD_COORDINATOR_API, {
+        method: "POST",
+        body: formPayload,
       });
 
-      setCoordinatorList((prev) => [...data, ...prev]);
+      if (!response.ok) {
+        throw new Error(`Upload Coordinator API Error : ${response.status}`);
+      }
 
-      setSuccessMessage(`${data.length} records uploaded successfully.`);
+      const result = await response.json();
+
+      await loadCoordinatorList();
+
+      setSuccessMessage(
+        result?.message ||
+          `${bulkPreviewRows.length || ""} ${ENTITY}${
+            bulkPreviewRows.length === 1 ? "" : "s"
+          } uploaded successfully.`
+            .replace(/\s+/g, " ")
+            .trim(),
+      );
 
       setShowSuccessModal(true);
 
       setFile(null);
-    };
+      setBulkPreviewRows([]);
 
-    reader.readAsText(file);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Error uploading Coordinator file:", error);
+
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ==========================
@@ -515,13 +641,27 @@ const SevaCoordinatorMaster = () => {
           ? result
           : [];
 
-      setCoordinatorList(list);
+      // Normalize field names in case the backend uses different
+      // casing/keys than the client (e.g. sevaCoordinatorID vs id).
+      const normalizedList = list.map((item) => ({
+        ...item,
+        id: item.id ?? item.sevaCoordinatorID ?? item.recId,
+        recId: item.recId ?? item.sevaCoordinatorID ?? item.id,
+        utsavID: item.utsavID ?? item.utsavId,
+        sevaID: item.sevaID ?? item.sevaId,
+      }));
+
+      setCoordinatorList(normalizedList);
     } catch (error) {
       console.error("Error loading Coordinator:", error);
 
       setCoordinatorList([]);
     }
   };
+
+  // ==========================
+  // ENTER KEY SAVE
+  // ==========================
 
   const handleKeyDown = (e) => {
     if (e.key !== "Enter") return;
@@ -536,33 +676,55 @@ const SevaCoordinatorMaster = () => {
   };
 
   // ==========================
-  // INITIAL API LOAD
+  // INITIAL LOAD
   // ==========================
 
   useEffect(() => {
     loadUtsavList();
+
     loadSevaList();
+
     loadCoordinatorList();
   }, []);
 
   // ==========================
   // FILTER SEVA BY UTSAV
   // ==========================
+  //
+  // NOTE: The Seva API does NOT return a `utsavID` field on each
+  // seva record — it only returns `utsavName`. So we can't match
+  // by ID here. Instead we resolve the selected Utsav's name from
+  // utsavOptions, then filter allSevaList by that name.
 
   useEffect(() => {
     if (!formData.utsavId) {
       setSevaOptions([]);
-
       return;
     }
 
+    const selectedUtsav = utsavOptions.find(
+      (x) => String(x.utsavID) === String(formData.utsavId),
+    );
+
+    if (!selectedUtsav) {
+      setSevaOptions([]);
+      return;
+    }
+
+    const normalize = (str) =>
+      String(str ?? "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase();
+
+    const targetName = normalize(selectedUtsav.utsavName);
+
     const filtered = allSevaList.filter(
-      (item) =>
-        String(item.utsavID ?? item.utsavId) === String(formData.utsavId),
+      (item) => normalize(item.utsavName) === targetName,
     );
 
     setSevaOptions(filtered);
-  }, [formData.utsavId, allSevaList]);
+  }, [formData.utsavId, utsavOptions, allSevaList]);
 
   return (
     <div className="sevacoordinatormaster-page">
@@ -570,9 +732,7 @@ const SevaCoordinatorMaster = () => {
 
       <h2 className="sevacoordinatormaster-title">Seva Coordinator Master</h2>
 
-      {/* ==========================
-          MODE SWITCH
-      ========================== */}
+      {/* MODE SWITCH */}
 
       <div className="sevacoordinatormaster-mode-switch">
         <label>
@@ -594,9 +754,7 @@ const SevaCoordinatorMaster = () => {
         </label>
       </div>
 
-      {/* ==========================
-          SINGLE ENTRY
-      ========================== */}
+      {/* SINGLE ENTRY */}
 
       {mode === "single" && (
         <div className="sevacoordinatormaster-card">
@@ -617,10 +775,7 @@ const SevaCoordinatorMaster = () => {
                 <option value="">Select Utsav</option>
 
                 {utsavOptions.map((item) => (
-                  <option
-                    key={item.utsavID ?? item.utsavId}
-                    value={item.utsavID ?? item.utsavId}
-                  >
+                  <option key={item.utsavID} value={item.utsavID}>
                     {item.utsavName}
                   </option>
                 ))}
@@ -642,15 +797,18 @@ const SevaCoordinatorMaster = () => {
               >
                 <option value="">Select Seva</option>
 
-                {sevaOptions.map((item) => (
-                  <option key={item.sevaId} value={item.sevaId}>
+                {sevaOptions.map((item, index) => (
+                  <option
+                    key={item.sevaID ?? item.sevaId ?? index}
+                    value={item.sevaID ?? item.sevaId}
+                  >
                     {item.sevaName}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* COORDINATOR 1 NAME */}
+            {/* COORDINATOR 1 */}
 
             <div className="sevacoordinatormaster-form-group">
               <label>Coordinator 1 Name</label>
@@ -664,8 +822,6 @@ const SevaCoordinatorMaster = () => {
                 onKeyDown={handleKeyDown}
               />
             </div>
-
-            {/* COORDINATOR 1 CONTACT */}
 
             <div className="sevacoordinatormaster-form-group">
               <label>Coordinator 1 Contact</label>
@@ -681,7 +837,7 @@ const SevaCoordinatorMaster = () => {
               />
             </div>
 
-            {/* COORDINATOR 2 NAME */}
+            {/* COORDINATOR 2 */}
 
             <div className="sevacoordinatormaster-form-group">
               <label>Coordinator 2 Name</label>
@@ -695,8 +851,6 @@ const SevaCoordinatorMaster = () => {
                 onKeyDown={handleKeyDown}
               />
             </div>
-
-            {/* COORDINATOR 2 CONTACT */}
 
             <div className="sevacoordinatormaster-form-group">
               <label>Coordinator 2 Contact</label>
@@ -713,156 +867,73 @@ const SevaCoordinatorMaster = () => {
             </div>
           </div>
 
-          {/* BUTTONS */}
-
           <div className="sevacoordinatormaster-btn-row">
-            <button type="button" onClick={handleSave}>
+            <AppButton variant="save" onClick={handleSave}>
               Save
-            </button>
-
-            <button type="button" onClick={handleUpdate}>
+            </AppButton>
+            <AppButton variant="update" onClick={handleUpdate}>
               Update
-            </button>
-
-            <button type="button" onClick={handleDelete}>
+            </AppButton>
+            <AppButton variant="delete" onClick={handleDelete}>
               Delete
-            </button>
-
-            <button type="button" onClick={handleExport}>
+            </AppButton>
+            <AppButton variant="export" onClick={handleExport}>
               Export
-            </button>
-
-            <button type="button" onClick={handleClear}>
+            </AppButton>
+            <AppButton variant="clear" onClick={handleClear}>
               Clear
-            </button>
+            </AppButton>
           </div>
         </div>
       )}
 
-      {/* ==========================
-          BULK UPLOAD
-      ========================== */}
+      {/* BULK UPLOAD */}
 
       {mode === "bulk" && (
         <div className="sevacoordinatormaster-card">
-          <div className="sevacoordinatormaster-form-grid">
-            {/* UTSAV SELECT */}
+          <input
+            type="file"
+            accept=".csv"
+            ref={fileInputRef}
+            onChange={(e) => handleFileSelected(e.target.files[0])}
+          />
 
-            <div className="sevacoordinatormaster-form-group">
-              <label>
-                Select Utsav <span>*</span>
-              </label>
-
-              <select
-                name="utsavId"
-                value={formData.utsavId}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-              >
-                <option value="">Select Utsav </option>
-
-                {utsavOptions.map((item) => (
-                  <option
-                    key={item.utsavID ?? item.utsavId}
-                    value={item.utsavID ?? item.utsavId}
-                  >
-                    {item.utsavName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Excel FILE */}
-
-            <div className="sevacoordinatormaster-form-group sevacoordinatormaster-file-upload-row">
-              <label>
-                Upload Excel File <span>*</span>
-              </label>
-
-              <div className="sevacoordinatormaster-file-upload-container">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv,.xlsx,.xls"
-                  className="sevacoordinatormaster-hidden-file-input"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  onKeyDown={handleKeyDown}
-                />
-
-                <div
-                  className="sevacoordinatormaster-custom-file-box"
-                  onClick={() => fileInputRef.current.click()}
-                >
-                  <button
-                    type="button"
-                    className="sevacoordinatormaster-choose-file-btn"
-                  >
-                    Choose File
-                  </button>
-
-                  <span className="sevacoordinatormaster-file-name">
-                    {file ? file.name : "No file chosen"}
-                  </span>
-                </div>
-
-                {file && (
-                  <button
-                    type="button"
-                    className="sevacoordinatormaster-file-delete-btn"
-                    onClick={() => {
-                      setFile(null);
-                      fileInputRef.current.value = "";
-                    }}
-                  >
-                    <FaTrashAlt />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* Preview table dynamically grows to match however many
+              coordinator rows were found in the uploaded file. */}
+          <BulkPreviewTable
+            columns={BULK_PREVIEW_COLUMNS}
+            rows={bulkPreviewRows}
+            emptyText="Choose a CSV file to preview the Seva Coordinators it contains."
+          />
 
           <div className="sevacoordinatormaster-btn-row">
-            <button type="button" onClick={handleUpload}>
+            <AppButton variant="upload" onClick={handleUpload}>
               Upload
-            </button>
+            </AppButton>
           </div>
         </div>
       )}
 
-      {/* ==========================
-          SEARCH
-      ========================== */}
+      {/* SEARCH */}
 
-      <div className="sevacoordinatormaster-search-container">
-        <label className="sevacoordinatormaster-search-label">
-          Search Seva / Coordinator
-        </label>
+      <SearchBar
+        label="Search Seva / Coordinator"
+        placeholder="Search Seva / Coordinator..."
+        value={searchText}
+        onChange={setSearchText}
+        className="sevacoordinatormaster-search-container"
+      />
 
-        <input
-          type="text"
-          className="sevacoordinatormaster-search-input"
-          placeholder="Search Seva / Coordinator..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
+      {/* TABLE - ID and Rec ID columns removed (not needed on the
+          frontend); mild dark border via app-table */}
 
-      {/* ==========================
-          TABLE
-      ========================== */}
-
-      <div className="sevacoordinatormaster-table-container">
-        <table>
+      <div className="sevacoordinatormaster-table-container app-table-container">
+        <table className="app-table">
           <thead>
             <tr>
-              <th>ID</th>
-
-              <th>Rec ID</th>
-
               <th>Utsav</th>
 
-              <th>Seva Name</th>
+              <th>Seva</th>
 
               <th>Coordinator 1</th>
 
@@ -879,20 +950,16 @@ const SevaCoordinatorMaster = () => {
               filteredList.map((item) => (
                 <tr
                   key={item.id}
+                  onClick={() => handleRowSelect(item)}
                   className={
                     selectedId === item.id
                       ? "sevacoordinatormaster-active-row"
                       : ""
                   }
-                  onClick={() => handleRowSelect(item)}
                 >
-                  <td>{item.id}</td>
+                  <td>{getUtsavName(item.utsavID)}</td>
 
-                  <td>{item.recId}</td>
-
-                  <td>{getUtsavName(item.utsavId)}</td>
-
-                  <td>{getSevaName(item.sevaId)}</td>
+                  <td>{getSevaName(item.sevaID)}</td>
 
                   <td>{item.coordinator1Name}</td>
 
@@ -905,104 +972,39 @@ const SevaCoordinatorMaster = () => {
               ))
             ) : (
               <tr>
-                <td
-                  colSpan="8"
-                  style={{
-                    textAlign: "center",
-
-                    padding: "20px",
-                  }}
-                >
-                  No Records Found
-                </td>
+                <td colSpan="6">No Records Found</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* ===============================
-          SUCCESS POPUP
-      =============================== */}
+      {/* DELETE CONFIRM MODAL - entity-aware, shared component */}
+      <ConfirmModal
+        open={showDeleteModal}
+        action="delete"
+        entity={ENTITY}
+        recordName={currentRecordLabel()}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
 
-      {showSuccessModal && (
-        <div className="utsavMaster-success-overlay">
-          <div className="utsavMaster-success-modal">
-            <h4>Success</h4>
+      {/* UPDATE CONFIRM MODAL - entity-aware, shared component */}
+      <ConfirmModal
+        open={showUpdateModal}
+        action="update"
+        entity={ENTITY}
+        recordName={currentRecordLabel()}
+        onConfirm={confirmUpdate}
+        onCancel={cancelUpdate}
+      />
 
-            <p>{successMessage}</p>
-
-            <div className="utsavMaster-success-buttons">
-              <button
-                className="utsavMaster-success-btn"
-                onClick={closeSuccessModal}
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===============================
-          UPDATE CONFIRMATION POPUP
-      =============================== */}
-
-      {showUpdateModal && (
-        <div className="utsavMaster-update-overlay">
-          <div className="utsavMaster-update-modal">
-            <h4>Update Confirmation</h4>
-
-            <p>Are you sure you want to update this Seva Coordinator?</p>
-
-            <div className="utsavMaster-update-buttons">
-              <button
-                className="utsavMaster-update-cancel-btn"
-                onClick={cancelUpdate}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="utsavMaster-update-confirm-btn"
-                onClick={confirmUpdate}
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===============================
-          DELETE CONFIRMATION POPUP
-      =============================== */}
-
-      {showDeleteModal && (
-        <div className="utsavMaster-delete-overlay">
-          <div className="utsavMaster-delete-modal">
-            <h4>Delete Confirmation</h4>
-
-            <p>Are you sure you want to delete this Seva Coordinator?</p>
-
-            <div className="utsavMaster-delete-buttons">
-              <button
-                className="utsavMaster-delete-cancel-btn"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="utsavMaster-delete-confirm-btn"
-                onClick={confirmDelete}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* SUCCESS MODAL - entity-aware, shared component */}
+      <ResultModal
+        open={showSuccessModal}
+        message={successMessage}
+        onClose={closeSuccessModal}
+      />
     </div>
   );
 };

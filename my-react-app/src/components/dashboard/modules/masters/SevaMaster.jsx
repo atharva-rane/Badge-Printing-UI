@@ -2,6 +2,19 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import "../../../../styles/masters/SevaMaster.css";
 import { FaTrashAlt } from "react-icons/fa";
 import Loader from "../../../Loader";
+import AppButton from "../../../common/AppButton";
+import SearchBar from "../../../common/SearchBar";
+import ConfirmModal from "../../../common/ConfirmModal";
+import ResultModal, { buildResultMessage } from "../../../common/ResultModal";
+import BulkPreviewTable from "../../../common/BulkPreviewTable";
+import { importExcelFile } from "../../../../utils/importExcel";
+
+const ENTITY = "Seva";
+
+// Bulk-upload preview columns - dynamically renders as many rows as the
+// file contains (see BulkPreviewTable).
+const BULK_PREVIEW_COLUMNS = [{ key: "sevaName", label: "Seva Name" }];
+const BULK_HEADER_MAP = [{ headerName: "Seva Name", field: "sevaName" }];
 
 const SevaMaster = () => {
   // =====================
@@ -18,6 +31,7 @@ const SevaMaster = () => {
   const [searchSevaQuery, setSearchSevaQuery] = useState("");
 
   const [file, setFile] = useState(null);
+  const [bulkPreviewRows, setBulkPreviewRows] = useState([]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -51,7 +65,7 @@ const SevaMaster = () => {
     }
 
     try {
-      setLoaderText("Saving Seva...");
+      setLoaderText(`Saving ${ENTITY}...`);
       setLoading(true);
 
       const payload = {
@@ -60,7 +74,7 @@ const SevaMaster = () => {
       };
 
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/AddSeva",
+        "https:TBATCHAPI.somee.com/batchprinting/api/SevaMaster/AddSeva",
         {
           method: "POST",
 
@@ -76,7 +90,7 @@ const SevaMaster = () => {
         throw new Error("Failed to save Seva.");
       }
 
-      setSuccessMessage("Saved successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "saved", payload.sevaName));
 
       setShowSuccessModal(true);
 
@@ -129,7 +143,7 @@ const SevaMaster = () => {
 
   const confirmUpdate = async () => {
     try {
-      setLoaderText("Updating Seva...");
+      setLoaderText(`Updating ${ENTITY}...`);
       setLoading(true);
 
       const payload = {
@@ -139,7 +153,7 @@ const SevaMaster = () => {
       };
 
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UpdateSeva",
+        "https:TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UpdateSeva",
         {
           method: "PUT",
           headers: {
@@ -156,7 +170,7 @@ const SevaMaster = () => {
       fetchSevaList();
 
       setShowUpdateModal(false);
-      setSuccessMessage("Updated successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "updated", payload.sevaName));
       setShowSuccessModal(true);
 
       handleClear();
@@ -187,15 +201,17 @@ const SevaMaster = () => {
 
   const confirmDelete = async () => {
     try {
-      setLoaderText("Deleting Seva...");
+      setLoaderText(`Deleting ${ENTITY}...`);
       setLoading(true);
 
       const payload = {
         sevaID: selectedId,
       };
 
+      const deletedName = sevaName;
+
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/DeleteSeva",
+        "https:TBATCHAPI.somee.com/batchprinting/api/SevaMaster/DeleteSeva",
         {
           method: "DELETE",
           headers: {
@@ -212,7 +228,7 @@ const SevaMaster = () => {
       fetchSevaList();
 
       setShowDeleteModal(false);
-      setSuccessMessage("Deleted successfully.");
+      setSuccessMessage(buildResultMessage(ENTITY, "deleted", deletedName));
       setShowSuccessModal(true);
 
       handleClear();
@@ -247,8 +263,26 @@ const SevaMaster = () => {
   }, [sevaList, searchSevaQuery]);
 
   // =====================
-  // BULK UPLOAD
+  // BULK UPLOAD - file selection builds a live preview that grows
+  // dynamically to match however many Seva names are in the file.
   // =====================
+  const handleFileSelected = async (selectedFile) => {
+    setFile(selectedFile);
+
+    if (!selectedFile) {
+      setBulkPreviewRows([]);
+      return;
+    }
+
+    try {
+      const parsed = await importExcelFile(selectedFile, BULK_HEADER_MAP);
+      setBulkPreviewRows(parsed);
+    } catch (error) {
+      console.error("Preview parse error:", error);
+      setBulkPreviewRows([]);
+    }
+  };
+
   const handleUpload = async () => {
     if (!utsav) {
       alert("Please select Utsav.");
@@ -270,7 +304,7 @@ const SevaMaster = () => {
       formData.append("utsavName", utsav);
 
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UploadFile",
+        "https:TBATCHAPI.somee.com/batchprinting/api/SevaMaster/UploadFile",
         {
           method: "POST",
           body: formData,
@@ -279,18 +313,20 @@ const SevaMaster = () => {
 
       const result = await response.text();
 
-      console.log("Upload Response:", result);
-      console.log("Status:", response.status);
-
       if (!response.ok) {
         throw new Error(result || "Failed to upload file.");
       }
 
-      setSuccessMessage("Excel uploaded successfully.");
+      setSuccessMessage(
+        `${bulkPreviewRows.length || ""} ${ENTITY}${
+          bulkPreviewRows.length === 1 ? "" : "s"
+        } uploaded successfully.`.replace(/\s+/g, " ").trim(),
+      );
 
       setShowSuccessModal(true);
 
       setFile(null);
+      setBulkPreviewRows([]);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -327,7 +363,7 @@ const SevaMaster = () => {
   const fetchUtsavList = async () => {
     try {
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList",
+        "https:TBATCHAPI.somee.com/batchprinting/api/UtsavMaster/GetUtsavList",
       );
 
       if (!response.ok) {
@@ -335,8 +371,6 @@ const SevaMaster = () => {
       }
 
       const data = await response.json();
-
-      console.log("Utsav List:", data);
 
       setUtsavList(data);
     } catch (error) {
@@ -347,18 +381,14 @@ const SevaMaster = () => {
   const fetchSevaList = async () => {
     try {
       const response = await fetch(
-        "http://TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList",
+        "https:TBATCHAPI.somee.com/batchprinting/api/SevaMaster/GetSevaList",
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch Seva List");
-      }
+      const text = await response.text();
 
-      const data = await response.json();
+      const data = text ? JSON.parse(text) : [];
 
-      console.log("Seva List:", data);
-
-      setSevaList(data);
+      setSevaList(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
     }
@@ -444,11 +474,21 @@ const SevaMaster = () => {
           </div>
 
           <div className="btn-row">
-            <button onClick={handleSave}>Save</button>
-            <button onClick={handleUpdate}>Update</button>
-            <button onClick={handleDelete}>Delete</button>
-            <button onClick={handleExport}>Export</button>
-            <button onClick={handleClear}>Clear</button>
+            <AppButton variant="save" onClick={handleSave}>
+              Save
+            </AppButton>
+            <AppButton variant="update" onClick={handleUpdate}>
+              Update
+            </AppButton>
+            <AppButton variant="delete" onClick={handleDelete}>
+              Delete
+            </AppButton>
+            <AppButton variant="export" onClick={handleExport}>
+              Export
+            </AppButton>
+            <AppButton variant="clear" onClick={handleClear}>
+              Clear
+            </AppButton>
           </div>
         </div>
       )}
@@ -490,7 +530,7 @@ const SevaMaster = () => {
                 type="file"
                 id="excelFile"
                 className="hidden-file-input"
-                onChange={(e) => setFile(e.target.files[0])}
+                onChange={(e) => handleFileSelected(e.target.files[0])}
                 onKeyDown={handleKeyDown}
               />
 
@@ -513,6 +553,7 @@ const SevaMaster = () => {
                   className="file-delete-btn"
                   onClick={() => {
                     setFile(null);
+                    setBulkPreviewRows([]);
                     fileInputRef.current.value = "";
                   }}
                   title="Remove File"
@@ -523,33 +564,39 @@ const SevaMaster = () => {
             </div>
           </div>
 
+          {/* Preview table dynamically grows to match however many
+              Seva names were found in the uploaded file. */}
+          <BulkPreviewTable
+            columns={BULK_PREVIEW_COLUMNS}
+            rows={bulkPreviewRows}
+            emptyText="Choose an Excel file to preview the Seva names it contains."
+          />
+
           <div className="btn-row">
-            <button onClick={handleUpload}>Upload</button>
+            <AppButton variant="upload" onClick={handleUpload}>
+              Upload
+            </AppButton>
           </div>
         </div>
       )}
 
       {/* SEARCH */}
-      <div className="SevaMasterSearch-box">
-        <label>Search Seva Name</label>
+      <SearchBar
+        label="Search Seva Name"
+        placeholder="Search Seva Name..."
+        value={searchSevaQuery}
+        onChange={setSearchSevaQuery}
+        onKeyDown={handleKeyDown}
+        id="sevaMasterSearchInput"
+        className="SevaMasterSearch-box"
+      />
 
-        <input
-          id="sevaMasterSearchInput"
-          name="sevaMasterSearchInput"
-          placeholder="Search Seva Name..."
-          value={searchSevaQuery}
-          onChange={(e) => setSearchSevaQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
-
-      {/* TABLE */}
-      <div className="table-container">
-        <table>
+      {/* TABLE - Seva ID and Seva Code columns removed (not needed on
+          the frontend); mild dark border via app-table */}
+      <div className="table-container app-table-container">
+        <table className="app-table">
           <thead>
             <tr>
-              <th>Seva ID</th>
-              <th>Seva Code</th>
               <th>Seva Name</th>
               <th>Utsav</th>
             </tr>
@@ -563,15 +610,13 @@ const SevaMaster = () => {
                   className={selectedId === item.sevaID ? "active-row" : ""}
                   onClick={() => handleRowSelect(item)}
                 >
-                  <td>{item.sevaID}</td>
-                  <td>{item.sevaID}</td>
                   <td>{item.sevaName}</td>
                   <td>{item.utsavName ? item.utsavName : "-"}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" style={{ textAlign: "center" }}>
+                <td colSpan="2" style={{ textAlign: "center" }}>
                   No records found
                 </td>
               </tr>
@@ -579,85 +624,33 @@ const SevaMaster = () => {
           </tbody>
         </table>
       </div>
-      {/* ===============================
-            Success Popup
-        =============================== */}
-      {showSuccessModal && (
-        <div className="utsavMaster-success-overlay">
-          <div className="utsavMaster-success-modal">
-            <h4>Success</h4>
 
-            <p>{successMessage}</p>
+      {/* Success Popup - entity-aware, shared component */}
+      <ResultModal
+        open={showSuccessModal}
+        message={successMessage}
+        onClose={closeSuccessModal}
+      />
 
-            <div className="utsavMaster-success-buttons">
-              <button
-                className="utsavMaster-success-btn"
-                onClick={closeSuccessModal}
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Update Confirmation - entity-aware, shared component */}
+      <ConfirmModal
+        open={showUpdateModal}
+        action="update"
+        entity={ENTITY}
+        recordName={sevaName}
+        onConfirm={confirmUpdate}
+        onCancel={cancelUpdate}
+      />
 
-      {/* ===============================
-      Update Confirmation Popup
-================================ */}
-      {showUpdateModal && (
-        <div className="utsavMaster-update-overlay">
-          <div className="utsavMaster-update-modal">
-            <h4>Update Confirmation</h4>
-
-            <p>Are you sure you want to update this Seva?</p>
-
-            <div className="utsavMaster-update-buttons">
-              <button
-                className="utsavMaster-update-cancel-btn"
-                onClick={cancelUpdate}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="utsavMaster-update-confirm-btn"
-                onClick={confirmUpdate}
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===============================
-      Delete Confirmation Popup
-================================ */}
-      {showDeleteModal && (
-        <div className="utsavMaster-delete-overlay">
-          <div className="utsavMaster-delete-modal">
-            <h4>Delete Confirmation</h4>
-
-            <p>Are you sure you want to delete this Seva?</p>
-
-            <div className="utsavMaster-delete-buttons">
-              <button
-                className="utsavMaster-delete-cancel-btn"
-                onClick={cancelDelete}
-              >
-                Cancel
-              </button>
-
-              <button
-                className="utsavMaster-delete-confirm-btn"
-                onClick={confirmDelete}
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Delete Confirmation - entity-aware, shared component */}
+      <ConfirmModal
+        open={showDeleteModal}
+        action="delete"
+        entity={ENTITY}
+        recordName={sevaName}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
     </div>
   );
 };

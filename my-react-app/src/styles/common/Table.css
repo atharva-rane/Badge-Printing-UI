@@ -1,0 +1,29 @@
+/* =====================================================
+   GLOBAL TABLE STYLE - mild dark border, applied to
+   every table in the project via the .app-table class.
+   Colors/header styling are left exactly as each page
+   already had them; this only standardizes the border.
+===================================================== */
+
+.app-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.app-table th,
+.app-table td {
+  border: 1px solid #94a3b8; /* mild dark (slate) border */
+}
+
+.app-table thead th {
+  border-bottom: 2px solid #64748b;
+}
+
+/* Wrapper that already had border-radius/overflow hidden in most
+   pages - keep the outer edge tidy when the mild border is added. */
+.app-table-container,
+.app-table-responsive {
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  overflow: hidden;
+}
